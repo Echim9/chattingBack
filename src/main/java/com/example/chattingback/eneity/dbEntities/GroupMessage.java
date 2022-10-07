@@ -1,4 +1,4 @@
-package com.example.chattingback.eneity;
+package com.example.chattingback.eneity.dbEntities;
 
 
 import com.baomidou.mybatisplus.annotation.TableName;

@@ -1,7 +1,10 @@
 package com.example.chattingback.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.chattingback.eneity.Group;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
-public interface GroupMapper extends BaseMapper<Group> {
+@Mapper
+@Repository
+public interface MybatisPlus extends BaseMapper{
 }

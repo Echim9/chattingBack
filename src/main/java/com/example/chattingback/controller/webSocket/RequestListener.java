@@ -1,7 +1,12 @@
 package com.example.chattingback.controller.webSocket;
 
-public class WebSocketListener {
-    /**
+import org.springframework.stereotype.Component;
+
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpServletRequest;
+
+/**
      * 监听器类:主要任务是用ServletRequest将我们的HttpSession携带过去
      */
     @Component
@@ -19,4 +24,3 @@ public class WebSocketListener {
     }
 
 
-}

@@ -60,7 +60,7 @@ public class AuthServiceImp implements AuthService {
         newUser.setUsername(user.getUsername());
         newUser.setRole("user");
         newUser.setCreateTime(new Date().getTime());
-        newUser.setAvator("");
+        newUser.setAvator("api/avatar/avatar("+ (int)(Math.random()*19 + 1) +").png ");
         newUser.setUserId(UUID.randomUUID().toString());
         return newUser;
     }

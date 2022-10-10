@@ -1,9 +1,7 @@
 package com.example.chattingback.eneity;
 
 import com.example.chattingback.enums.Rcode;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,10 +14,10 @@ public class Response {
 
     private Object data;
 
-    Response() {
+    public Response() {
     }
 
-    Response(builder builder) {
+    public Response(builder builder) {
         this.code = builder.code;
         if (!StringUtils.isEmpty(builder.msg)) {
             this.msg = builder.msg;

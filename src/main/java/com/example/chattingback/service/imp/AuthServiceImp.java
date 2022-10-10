@@ -9,7 +9,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -60,9 +59,7 @@ public class AuthServiceImp implements AuthService {
         newUser.setPassword(securityUtil.bCryptEncodePassword(user.getPassword()));
         newUser.setUsername(user.getUsername());
         newUser.setRole("user");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        newUser.setCreateTime(sdf.format(date));
+        newUser.setCreateTime(new Date().getTime());
         newUser.setAvator("");
         newUser.setUserId(UUID.randomUUID().toString());
         return newUser;

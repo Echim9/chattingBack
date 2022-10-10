@@ -4,25 +4,35 @@ package com.example.chattingback.eneity.dbEntities;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@TableName("Group_Message")
+@NoArgsConstructor
+@TableName("group_message")
 public class GroupMessage {
 
-  private long id;
+  private long _id;
   private String userId;
   private String groupId;
   private String content;
-  private java.sql.Timestamp time;
+
+  private String messageType;
+
+  private long time;
+  public void setTime(long time) {
+    this.time = time;
+  }
+
+
 
 
   public long getId() {
-    return id;
+    return _id;
   }
 
   public void setId(long id) {
-    this.id = id;
+    this._id = id;
   }
 
 
@@ -53,12 +63,8 @@ public class GroupMessage {
   }
 
 
-  public java.sql.Timestamp getTime() {
+  public long getTime() {
     return time;
-  }
-
-  public void setTime(java.sql.Timestamp time) {
-    this.time = time;
   }
 
 }

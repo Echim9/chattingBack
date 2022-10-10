@@ -17,8 +17,8 @@ public class JwtUtil {
         Date expire_at = new Date(System.currentTimeMillis() + EXPIRE_TIME);
         Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
         return JWT.create()
-                .withClaim("password", user.getPassword())
                 .withClaim("userId",user.getUserId())
+                .withClaim("password", user.getPassword())
                 .withExpiresAt(expire_at)
                 .sign(algorithm);
     }

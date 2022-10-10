@@ -1,13 +1,12 @@
 package com.example.chattingback.controller;
 
-import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.Response;
+import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.service.imp.GroupServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -24,9 +23,7 @@ public class GroupController {
         Group newGroup = new Group();
         newGroup.setGroupName(group.getGroupName());
         Date nowTime = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String formatedTime = sdf.format(nowTime);
-        newGroup.setCreateTime(formatedTime);
+        newGroup.setCreateTime(nowTime.getTime());
         newGroup.setGroupId(UUID.randomUUID().toString());
         return groupServiceImp.InitGroup(newGroup);
         }

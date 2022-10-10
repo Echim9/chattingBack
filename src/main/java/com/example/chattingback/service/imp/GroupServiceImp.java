@@ -84,14 +84,12 @@ public class GroupServiceImp implements GroupService {
         QueryWrapper<Group> groupQueryWrapper = new QueryWrapper<>();
         groupQueryWrapper
                 .isNotNull("groupName")
-                .eq("groupName", group.getGroupName());
+                .like("groupName", group.getGroupName());
         List<Group> groupList = groupMapper.selectList(groupQueryWrapper);
         if (groupList.size() > 0) {
-            Group groupFound = groupList.get(0);
             return Response
                     .builder()
-                    .msg("寻找成功")
-                    .data(groupFound)
+                    .data(groupList)
                     .build();
         } else if (groupList.size() == 0) {
             return Response

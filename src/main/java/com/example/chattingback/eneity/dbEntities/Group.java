@@ -5,19 +5,18 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Value;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("GroupData")
+@TableName("groupdata")
 public class Group {
 
   private String groupId;
   private String userId;
   private String groupName;
   private String notice;
-  private String createTime;
+  private long createTime;
 
 
   public String getGroupId() {
@@ -56,11 +55,11 @@ public class Group {
   }
 
 
-  public String getCreateTime() {
+  public long getCreateTime() {
     return createTime;
   }
 
-  public void setCreateTime(String createTime) {
+  public void setCreateTime(long createTime) {
     this.createTime = createTime;
   }
 

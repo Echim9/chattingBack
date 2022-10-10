@@ -3,23 +3,25 @@ package com.example.chattingback.eneity.dbEntities;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@TableName("User_Friend")
+@NoArgsConstructor
+@TableName("user_map")
 public class UserFriend {
 
-  private long id;
+  private long _id;
   private String friendId;
   private String userId;
 
 
   public long getId() {
-    return id;
+    return _id;
   }
 
   public void setId(long id) {
-    this.id = id;
+    this._id = id;
   }
 
 

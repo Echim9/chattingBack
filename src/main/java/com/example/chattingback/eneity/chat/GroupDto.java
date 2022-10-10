@@ -19,5 +19,5 @@ public class GroupDto {
 
     private GroupMessageDto GroupMessageDto[];
 
-    private int createTime;
+    private long createTime;
 }

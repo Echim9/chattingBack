@@ -1,7 +1,5 @@
 package com.example.chattingback.eneity.dbEntities;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,21 +8,20 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("User_Group")
+@TableName("group_map")
 public class UserGroup {
 
-  @TableId(type = IdType.AUTO)
-  private long id;
+  private long _id;
   private String groupId;
   private String userId;
 
 
   public long getId() {
-    return id;
+    return _id;
   }
 
   public void setId(long id) {
-    this.id = id;
+    this._id = id;
   }
 
 

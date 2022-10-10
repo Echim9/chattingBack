@@ -27,21 +27,21 @@ public class FriendServiceImp implements FriendService {
     public Response findByName(String username) {
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper
-                .isNotNull("username")
-                .eq("username", username);
-        User userSelectedFromDb = userMapper.selectOne(userQueryWrapper);
-        if (ObjectUtils.isEmpty(userSelectedFromDb)) {
+                .like("username", username)
+                .isNotNull("username");
+        List<User> users = userMapper.selectList(userQueryWrapper);
+        if (ObjectUtils.isEmpty(users)) {
             return Response
                     .builder()
                     .code(Rcode.FAIL)
-                    .msg("查无用户")
+                    .msg("请输入用户名")
                     .data(null)
                     .build();
-        } else if (!ObjectUtils.isEmpty(userSelectedFromDb)) {
+        } else if (!ObjectUtils.isEmpty(users)) {
+            System.out.println("成功查找用户" + users);
             return Response
                     .builder()
-                    .msg("查询成功")
-                    .data(userSelectedFromDb)
+                    .data(users)
                     .build();
         }
         return Response

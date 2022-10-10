@@ -4,24 +4,30 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Value;
-
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("User")
+@TableName("user")
 public class User {
 
   private String userId;
   private String username;
   private String password;
-  private String avator;
+  private String avatar;
   private String tag;
-  private String createTime;
+  private long createTime;
   private String role;
 
+  private String status;
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
 
   public String getUserId() {
     return userId;
@@ -51,11 +57,11 @@ public class User {
 
 
   public String getAvator() {
-    return avator;
+    return avatar;
   }
 
   public void setAvator(String avator) {
-    this.avator = avator;
+    this.avatar = avator;
   }
 
 
@@ -68,11 +74,11 @@ public class User {
   }
 
 
-  public String getCreateTime() {
+  public long getCreateTime() {
     return createTime;
   }
 
-  public void setCreateTime(String createTime) {
+  public void setCreateTime(long createTime) {
     this.createTime = createTime;
   }
 

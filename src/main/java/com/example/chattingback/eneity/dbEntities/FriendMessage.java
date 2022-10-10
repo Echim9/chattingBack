@@ -3,27 +3,38 @@ package com.example.chattingback.eneity.dbEntities;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@TableName("Friend_Message")
+@NoArgsConstructor
+@TableName("friend_message")
 public class FriendMessage {
 
-  private long id;
+  private long _id;
   private String userId;
   private String friendId;
   private String content;
-  private java.sql.Timestamp time;
+  private long time;
+
+  private String messageType;
 
 
   public long getId() {
-    return id;
+    return _id;
   }
 
   public void setId(long id) {
-    this.id = id;
+    this._id = id;
   }
 
+  public String getMessageType() {
+    return messageType;
+  }
+
+  public void setMessageType(String messageType) {
+    this.messageType = messageType;
+  }
 
   public String getUserId() {
     return userId;
@@ -52,11 +63,11 @@ public class FriendMessage {
   }
 
 
-  public java.sql.Timestamp getTime() {
+  public long getTime() {
     return time;
   }
 
-  public void setTime(java.sql.Timestamp time) {
+  public void setTime(long time) {
     this.time = time;
   }
 

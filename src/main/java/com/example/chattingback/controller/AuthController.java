@@ -1,24 +1,21 @@
 package com.example.chattingback.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.chattingback.eneity.LoginData;
 import com.example.chattingback.eneity.Response;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.enums.Rcode;
+import com.example.chattingback.mapper.UserMapper;
 import com.example.chattingback.service.imp.AuthServiceImp;
 import com.example.chattingback.service.imp.GroupServiceImp;
 import com.example.chattingback.utils.JwtUtil;
 import com.example.chattingback.utils.VerifyUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("auth")
@@ -33,13 +30,11 @@ public class AuthController {
     @Autowired
     private GroupServiceImp groupServiceImp;
 
+    @Autowired
+    private UserMapper userMapper;
+
     @PostMapping("/register")
-    public Response register(@RequestBody User user, HttpServletRequest request) {
-        Object user1 = request.getAttribute("user");
-        Object user2 = request.getSession().getAttribute("user");
-        System.out.println("user1" + user1);
-        System.out.println("user2" + user2);
-        System.out.println("user" + user);
+    public Response register(@RequestBody User user) {
         if (BooleanUtils.isFalse(VerifyUtil.isValidPassword(user.getPassword()))) {
             return new Response
                     .builder()
@@ -58,10 +53,11 @@ public class AuthController {
         }
         User SecuritiedUser = authServiceImp.newUserConstrator(user);
         if (authServiceImp.insertIntoUserDb(SecuritiedUser)) {
+            System.out.println(new LoginData(user, JwtUtil.releaseToken(user)));
             return new Response
                     .builder()
                     .msg("注册成功")
-                    .data("")
+                    .data(new LoginData(SecuritiedUser, JwtUtil.releaseToken(user)))
                     .build();
         }
         return new Response
@@ -73,20 +69,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Response login(@RequestBody User user) {
-        if (1 == 1) {
-
-        }
-        boolean matchUserResult = authServiceImp.matchUser(user);
+    public Response login(@RequestBody User userSended) {
+        boolean matchUserResult = authServiceImp.matchUser(userSended);
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("username", userSended.getUsername());
+        User user = userMapper.selectOne(userQueryWrapper);
         if (BooleanUtils.isTrue(matchUserResult)) {
-            String token = jwtUtil.releaseToken(user);
-            LoginData loginData = new LoginData();
-            loginData.setToken(token);
-            loginData.setUser(user);
+            System.out.println(new LoginData(user, JwtUtil.releaseToken(user)));
             return Response
                     .builder()
                     .msg("登陆成功")
-                    .data(loginData)
+                    .data(new LoginData(user, JwtUtil.releaseToken(user)))
                     .build();
         } else if (BooleanUtils.isFalse(matchUserResult)) {
             return Response

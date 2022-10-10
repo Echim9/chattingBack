@@ -1,5 +1,6 @@
 package com.example.chattingback.eneity.chat;
 
+import com.example.chattingback.eneity.dbEntities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,19 @@ public class FriendDto {
 
     private String tag;
 
-    private GroupMessageDto GroupMessageDto[];
+    private FriendMessageDto FriendMessageDto[];
 
-    private int createTime;
+    private long createTime;
+
+    public static FriendDto initializeFriendDto(User user){
+        FriendDto friendDto = new FriendDto();
+        friendDto.setAvatar(user.getAvatar());
+        friendDto.setRole(user.getRole());
+        friendDto.setTag(user.getTag());
+        friendDto.setRole(user.getRole());
+        friendDto.setUsername(user.getUsername());
+        friendDto.setUserId(user.getUserId());
+        friendDto.setCreateTime(user.getCreateTime());
+        return friendDto;
+    }
 }

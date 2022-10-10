@@ -89,6 +89,18 @@ public class MyBeanUtils<S, T> {
         return emptyNamesSet.toArray(result);
     }
 
+    public static String strToASCII(String str) {
+        StringBuilder sb = new StringBuilder();
+        char[] ch = str.toCharArray();
+        for (int i = 0; i < ch.length; i++) {
+            int i1 = Integer.valueOf(ch[i]).intValue();
+//            String s = Integer.toHexString(i1);
+            sb.append(i1);
+        }
+        return sb.toString();
+
+    }
+
     public static void copyNotNullProperties(Object source, Object target) {
         String[] ignoreProperties = getNullPropertyNames(source);
         BeanUtils.copyProperties(source, target, ignoreProperties);

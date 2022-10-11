@@ -1,7 +1,7 @@
 package com.example.chattingback.service;
 
 import com.example.chattingback.eneity.dbEntities.Group;
-import com.example.chattingback.eneity.Response;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.User;
 
 public interface GroupService {

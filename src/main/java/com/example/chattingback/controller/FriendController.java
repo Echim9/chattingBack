@@ -1,6 +1,6 @@
 package com.example.chattingback.controller;
 
-import com.example.chattingback.eneity.Response;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.service.imp.FriendServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

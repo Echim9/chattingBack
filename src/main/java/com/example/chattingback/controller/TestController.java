@@ -1,5 +1,6 @@
 package com.example.chattingback.controller;
 
+import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.mapper.MybatisPlus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ClassUtils;
@@ -9,6 +10,12 @@ import java.io.IOException;
 
 @RestController
 public class TestController {
+    public class a{
+        public class b{
+
+        }
+    }
+    private User[][] users;
     public static String strToASCII(String str) {
         StringBuilder sb = new StringBuilder();
         char[] ch = str.toCharArray();

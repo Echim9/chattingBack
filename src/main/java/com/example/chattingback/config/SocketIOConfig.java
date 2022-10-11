@@ -3,12 +3,9 @@ package com.example.chattingback.config;
 
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.example.chattingback.controller.socketIO.SocketIOHandler;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.Resource;
 
 /**
  * @ClassNameSocketIOConfig
@@ -17,11 +14,13 @@ import javax.annotation.Resource;
  * @Date 2022/1/2114:19
  * @Version 1.0
  **/
-@Configuration
-public class SocketIOConfig implements InitializingBean {
+//记录 initializingBean的坑
 
-    @Resource
-    private SocketIOHandler socketIOHandler;
+@Configuration
+public class SocketIOConfig  {
+//implements InitializingBean
+//    @Resource
+//    private SocketIOHandler socketIOHandler;
 
     @Value("${socketio.host}")
     private String host;
@@ -48,8 +47,9 @@ public class SocketIOConfig implements InitializingBean {
     private int pingInterval;
 
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+//    @Override
+    @Bean
+    public SocketIOServer initServiceIoServer() {
         SocketConfig socketConfig = new SocketConfig();
         socketConfig.setReuseAddress(true);
         socketConfig.setTcpNoDelay(true);
@@ -74,10 +74,11 @@ public class SocketIOConfig implements InitializingBean {
 
         SocketIOServer socketIOServer = new SocketIOServer(configuration);
         //添加事件监听器
-        socketIOServer.addListeners(socketIOHandler);
-        //启动SocketIOServer
-        socketIOServer.start();
-        System.out.println("SocketIO启动完毕");
+//        socketIOServer.addListeners(socketIOHandler);
+//        //启动SocketIOServer
+//        socketIOServer.start();
+//        System.out.println("SocketIO启动完毕");
+        return socketIOServer;
 
     }
 

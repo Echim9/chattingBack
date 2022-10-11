@@ -1,10 +1,12 @@
 package com.example.chattingback.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.chattingback.eneity.LoginData;
-import com.example.chattingback.eneity.Response;
+import com.example.chattingback.eneity.response.LoginData;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.User;
+import com.example.chattingback.eneity.dbEntities.UserGroup;
 import com.example.chattingback.enums.Rcode;
+import com.example.chattingback.mapper.UserGroupMapper;
 import com.example.chattingback.mapper.UserMapper;
 import com.example.chattingback.service.imp.AuthServiceImp;
 import com.example.chattingback.service.imp.GroupServiceImp;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("auth")
 public class AuthController {
 
+    private static final String DEFAULT_ROOM = "Echim9的大家庭" ;
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -29,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private GroupServiceImp groupServiceImp;
+
+    @Autowired
+    private UserGroupMapper userGroupMapper;
 
     @Autowired
     private UserMapper userMapper;
@@ -54,6 +61,10 @@ public class AuthController {
         User SecuritiedUser = authServiceImp.newUserConstrator(user);
         if (authServiceImp.insertIntoUserDb(SecuritiedUser)) {
             System.out.println(new LoginData(user, JwtUtil.releaseToken(user)));
+            UserGroup userGroup = new UserGroup();
+            userGroup.setGroupId(DEFAULT_ROOM);
+            userGroup.setUserId(SecuritiedUser.getUserId());
+            userGroupMapper.insert(userGroup);
             return new Response
                     .builder()
                     .msg("注册成功")

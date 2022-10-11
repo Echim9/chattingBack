@@ -2,7 +2,7 @@ package com.example.chattingback.service.imp;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.chattingback.eneity.dbEntities.Group;
-import com.example.chattingback.eneity.Response;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.dbEntities.UserGroup;
 import com.example.chattingback.enums.Rcode;

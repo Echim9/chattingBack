@@ -1,6 +1,6 @@
 package com.example.chattingback.controller;
 
-import com.example.chattingback.eneity.Response;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.service.imp.GroupServiceImp;

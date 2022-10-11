@@ -3,18 +3,19 @@ package com.example.chattingback.controller.socketIO;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
-import com.example.chattingback.eneity.payload;
-import com.example.chattingback.eneity.JoinRes;
-import com.example.chattingback.eneity.Response;
 import com.example.chattingback.eneity.chat.FriendDto;
 import com.example.chattingback.eneity.chat.FriendMessageDto;
 import com.example.chattingback.eneity.chat.GroupDto;
 import com.example.chattingback.eneity.chat.GroupMessageDto;
 import com.example.chattingback.eneity.dbEntities.GroupMessage;
 import com.example.chattingback.eneity.dbEntities.*;
+import com.example.chattingback.eneity.payload;
+import com.example.chattingback.eneity.response.JoinRes;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
 import com.example.chattingback.mapper.*;
 import com.example.chattingback.utils.MyBeanUtils;
@@ -29,9 +30,15 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class SocketIOHandler {
+
+    @Autowired
+    private SocketIOServer socketIOServer;
+
+    private static final String DEFAULT_ROOM = "Echim9的大家庭" ;
 
     @Autowired
     private com.example.chattingback.mapper.GroupMessage groupMessageMapper;
@@ -59,11 +66,16 @@ public class SocketIOHandler {
     private ClientCache clientCache;
 
     /**
-     * @Description //TODO 客户端连接的时候触发，前端js触发：socket = io.connect("http://localhost:9092");
+     * @Description //TODO 客户端连接的时候触发，前端js触发：socket = io.connect("http://localhost:3000");
      **/
     @OnConnect
     public void onConnect(SocketIOClient client) {
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
+        getActiveGroupUser();
+        //用户加入自己的聊天房间
+        client.joinRoom(userId);
+        //用户加入默认聊天群组
+        client.joinRoom(DEFAULT_ROOM);
         UUID sessionId = client.getSessionId();
         clientCache.saveClient(userId, sessionId, client);
         System.out.println("userId: " + userId + "连接建立成功 - " + sessionId);
@@ -77,7 +89,9 @@ public class SocketIOHandler {
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
         UUID sessionId = client.getSessionId();
         clientCache.deleteSessionClientByUserId(userId, sessionId);
+        getActiveGroupUser();
         System.out.println("userId: " + userId + "连接关闭成功 - " + sessionId);
+
     }
 
     /**
@@ -89,7 +103,9 @@ public class SocketIOHandler {
     //2022.10.10测试成功
     @OnEvent("chatData")
     public void chatEvent(SocketIOClient client, AckRequest ackRequest, User user) {
+        getActiveGroupUser();
         //初始化变量
+        ArrayList<FriendDto> userArr = new ArrayList<>();
         ArrayList<GroupDto> groupArrayList = new ArrayList<>();
         ArrayList<FriendDto> friendArrayList = new ArrayList<>();
         HashMap<String, User> userHashMap = new HashMap<>();
@@ -109,7 +125,7 @@ public class SocketIOHandler {
             List<UserFriend> userFriends = userFriendMapper.selectList(userFriendQueryWrapper);
             //获取用户所加入群组的基本信息
             userGroups.forEach(group -> {
-                if (1 == 1) {
+                if (1 == 0) {
                     System.out.println("=====================group===============================================");
                     System.out.println(group);
                     System.out.println("========================================================================");
@@ -121,7 +137,7 @@ public class SocketIOHandler {
             for (int i = 0; i < size2; i++) {
                 GroupDto groupDto = groupArrayList.get(i);
                 QueryWrapper<GroupMessage> groupMessageDtoQueryWrapper = new QueryWrapper<>();
-                if (1 == 1) {
+                if (1 == 0) {
                     System.out.println("===============================================================================");
                     System.out.println("siza = " + size2);
                     System.out.println(groupArrayList);
@@ -156,7 +172,7 @@ public class SocketIOHandler {
             //获取用户与好友的聊天信息
             int size1 = userFriends.size();
             for (int i = 0; i < size1; i++) {
-                if (1 == 1) {
+                if (1 == 0) {
                     System.out.println("=======================================userFriends==============================");
                     System.out.println("size = " + size1);
                     System.out.println("i = " + i);
@@ -186,11 +202,17 @@ public class SocketIOHandler {
                 FriendMessageDto[] dtos = messageDtos.toArray(new FriendMessageDto[messageDtos.size()]);
                 friendDto.setFriendMessageDto(dtos);
             }
+            userHashMap.forEach((id, inUser)->{
+                userArr.add(MyBeanUtils.copyNotNullProperties(inUser, FriendDto.class));
+            });
+            friendArrayList.forEach((friendDto ->{
+                userArr.add(friendDto);
+            }));
             payload payload = new payload();
             payload.setFriendData(friendArrayList);
-            payload.setUserData(userHashMap);
+            payload.setUserData(userArr);
             payload.setGroupData(groupArrayList);
-            if (1 == 1) {
+            if (1 == 0) {
                 System.out.println("==============================allDataRes============================");
                 System.out.println(payload);
                 System.out.println("===============================================================");
@@ -238,6 +260,7 @@ public class SocketIOHandler {
                                 .data(group)
                                 .build());
                     }
+                    getActiveGroupUser();
                     return;
                 }
             } else if (!ObjectUtils.isEmpty(isGroup)) {
@@ -299,6 +322,7 @@ public class SocketIOHandler {
                                 .data(joinRes)
                                 .build()
                         );
+                        getActiveGroupUser();
                         return;
                     }
                 } else {
@@ -346,13 +370,13 @@ public class SocketIOHandler {
         User user = userMapper.selectOne(userQueryWrapper);
         Group group = groupMapper.selectOne(groupQueryWrapper);
         JoinRes joinRes = new JoinRes(group, user);
+        getActiveGroupUser();
         if (!ObjectUtils.isEmpty(group) && !ObjectUtils.isEmpty(user)) {
             client.joinRoom(group.getGroupId());
             client.sendEvent("joinGroupSocket",
                     new Response()
                     .builder()
-                    .code(Rcode.OK)
-                    .msg(user.getUsername() + "加入群组" + group.getGroupName())
+                    .msg(user.getUsername() + "上线进入" + group.getGroupName())
                     .data(joinRes)
                     .build()
             );
@@ -557,12 +581,15 @@ public class SocketIOHandler {
             GroupMessage groupMessage = groupMessageDto.initializeGroupMessageDto(groupMessageDto);
             int result = groupMessageMapper.insert(groupMessage);
             if (result > 0) {
-                client.sendEvent("groupMessage",
-                        new Response()
-                                .builder()
-                                .msg("")
-                                .data(groupMessage)
-                                .build());
+                if (1 == 1){
+                    socketIOServer.getRoomOperations(groupMessage.getGroupId())
+                            .sendEvent("groupMessage",
+                                    new Response()
+                                            .builder()
+                                            .msg("")
+                                            .data(groupMessage)
+                                            .build());
+                }
                 return;
             } else {
                 client.sendEvent("groupMessage",
@@ -588,6 +615,7 @@ public class SocketIOHandler {
     }
 
     //2022.10.09 第一次基础测试成功，细节未知
+    //2022.10.11 第二次修改，发送信息应由房间接受
     @OnEvent("friendMessage")
     public void friendMessage(SocketIOClient client, AckRequest ackRequest, FriendMessageDto friendMessageDto) {
         String roomId;
@@ -612,12 +640,14 @@ public class SocketIOHandler {
                 FriendMessage friendMessage = FriendMessageDto.initializeFriendMessageDto(friendMessageDto);
                 int result = friendMessageMapper.insert(friendMessage);
                 if (result > 0) {
-                    client.sendEvent("friendMessage",
-                            new Response()
-                                    .builder()
-                                    .msg("")
-                                    .data(friendMessage)
-                                    .build());
+                   socketIOServer.getRoomOperations(roomId)
+                           .sendEvent("friendMessage",
+                                   new Response()
+                                           .builder()
+                                           .code(Rcode.OK)
+                                           .msg("")
+                                           .data(friendMessage)
+                                           .build());
                     return;
                 } else {
                     client.sendEvent("friendMessage",
@@ -642,5 +672,47 @@ public class SocketIOHandler {
         }
     }
 
+    //获取在线用户人数
+    public void getActiveGroupUser(){
+        ArrayList<String> userIdArray = new ArrayList<>();
+        socketIOServer.getAllClients().forEach(clientCache -> {
+            String userId = clientCache.getHandshakeData().getSingleUrlParam("userId");
+            userIdArray.add(userId);
+        });
+        //数组去重
+        List<String> UserIdArr = userIdArray.stream().distinct().collect(Collectors.toList());
+        HashMap<String, HashMap<String, User>> activeGroupUserGather = new HashMap<>();
+        userIdArray.forEach(userId ->{
+            QueryWrapper<UserGroup> userGroupQueryWrapper = new QueryWrapper<>();
+            userGroupQueryWrapper.eq("userId", userId);
+            List<UserGroup> userGroups = userGroupMapper.selectList(userGroupQueryWrapper);
+            QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+            userQueryWrapper.eq("userId", userId);
+            User user = userMapper.selectOne(userQueryWrapper);
+            userGroups.forEach(userGroup -> {
+            if (ObjectUtils.isNotEmpty(userGroup) && ObjectUtils.isNotEmpty(user)){
+                if (1 == 0) {
+                    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    System.out.println(user);
+                }
+                HashMap<String, User> stringUserHashMap = new HashMap<>();
+                stringUserHashMap.put(user.getUserId(), user);
+                System.out.println(stringUserHashMap);
+                activeGroupUserGather.put(userGroup.getGroupId(), stringUserHashMap );
+            }
+            });
+        });
+        if (1 == 0) {
+            System.out.println("========================activeGroupUsers=====================================");
+            System.out.println(activeGroupUserGather);
+            System.out.println("========================activeGroupUsers=====================================");
+        }
+        socketIOServer.getRoomOperations(DEFAULT_ROOM).sendEvent("activeGroupUser",
+                                            new Response<>()
+                                                    .builder()
+                                                    .msg("activeGroupUser")
+                                                    .data(activeGroupUserGather)
+                                                    .build());
+    }
 
 }

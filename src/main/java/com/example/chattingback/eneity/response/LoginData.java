@@ -1,4 +1,4 @@
-package com.example.chattingback.eneity;
+package com.example.chattingback.eneity.response;
 
 import com.example.chattingback.eneity.dbEntities.User;
 import lombok.AllArgsConstructor;

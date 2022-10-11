@@ -1,4 +1,4 @@
-package com.example.chattingback.eneity;
+package com.example.chattingback.eneity.response;
 
 import com.example.chattingback.enums.Rcode;
 import lombok.Data;
@@ -6,13 +6,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 @Data
-public class Response {
+public class Response<T> {
 
     private Rcode code;
 
     private String msg;
 
-    private Object data;
+    private T data;
 
     public Response() {
     }
@@ -23,7 +23,7 @@ public class Response {
             this.msg = builder.msg;
         }
         if (!ObjectUtils.isEmpty(builder.data)) {
-            this.data = builder.data;
+            this.data = (T) builder.data;
         }
     }
 
@@ -31,13 +31,13 @@ public class Response {
         return new builder();
     }
 
-    public static class builder {
+    public static class builder<T> {
 
         Rcode code;
 
         String msg;
 
-        Object data;
+        T data;
 
         public builder code(Rcode code) {
             this.code = code;
@@ -49,7 +49,7 @@ public class Response {
             return this;
         }
 
-        public builder data(Object data) {
+        public builder data(T data) {
             this.data = data;
             return this;
         }

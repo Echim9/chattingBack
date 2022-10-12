@@ -640,11 +640,11 @@ public class SocketIOHandler {
                 FriendMessage friendMessage = FriendMessageDto.initializeFriendMessageDto(friendMessageDto);
                 int result = friendMessageMapper.insert(friendMessage);
                 if (result > 0) {
+                    System.out.println("roomId:" +  roomId);
                    socketIOServer.getRoomOperations(roomId)
                            .sendEvent("friendMessage",
                                    new Response()
                                            .builder()
-                                           .code(Rcode.OK)
                                            .msg("")
                                            .data(friendMessage)
                                            .build());

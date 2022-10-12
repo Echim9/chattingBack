@@ -1,7 +1,10 @@
 package com.example.chattingback.service.imp;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.chattingback.eneity.dbEntities.Group;
+import com.example.chattingback.eneity.dbEntities.GroupMessage;
+import com.example.chattingback.eneity.response.GroupMesRes;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.dbEntities.UserGroup;
@@ -15,10 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
 public class GroupServiceImp implements GroupService {
+
+    @Autowired
+    private com.example.chattingback.mapper.GroupMessage groupMessage;
 
     @Autowired
     private GroupMapper groupMapper;
@@ -175,5 +182,91 @@ public class GroupServiceImp implements GroupService {
                 .msg("群组用户查找失败")
                 .data(null)
                 .build();
+    }
+
+    @Override
+    public Response postGroups(String groupIds) {
+        ArrayList<Group> groups = new ArrayList<>();
+        try {
+            if (groupIds.length() > 0) {
+                String[] id = groupIds.split(",");
+                for (String groupId : id) {
+                    QueryWrapper<Group> groupQueryWrapper = new QueryWrapper<>();
+                    groupQueryWrapper.eq("groupId", groupId);
+                    Group group = groupMapper.selectOne(groupQueryWrapper);
+                    if (group == null) {
+                        groups.add(group);
+                    }
+                }
+                return new Response()
+                        .builder()
+                        .msg("获取群信息成功")
+                        .data(groups)
+                        .build();
+            }
+            return new Response()
+                    .builder()
+                    .msg("获取群信息失败")
+                    .code(Rcode.FAIL)
+                    .data("")
+                    .build();
+        }catch (Exception e) {
+            return new Response()
+                    .builder()
+                    .msg("获取群失败")
+                    .code(Rcode.ERROR)
+                    .data("")
+                    .build();
+        }
+
+    }
+
+    @Override
+    public Response getGroupMessages(String groupId, int current, int pageSize) {
+        if (!groupId.isEmpty()) {
+            HashMap<String, User> userHashMap = new HashMap<>();
+            ArrayList<GroupMessage> messagesArr = new ArrayList<>();
+            ArrayList<User> usersArr = new ArrayList<>();
+            Page<GroupMessage> page = new Page<>((current / pageSize) + 2, pageSize);
+            QueryWrapper<GroupMessage> groupMessageQueryWrapper = new QueryWrapper<>();
+            groupMessageQueryWrapper
+                    .eq("groupId", groupId)
+                    .orderByDesc("time");
+            Page<GroupMessage> groupMessagePage = groupMessage.selectPage(page, groupMessageQueryWrapper);
+            List<GroupMessage> records = groupMessagePage.getRecords();
+            for (int i = current; i < current + pageSize - 1; i++) {
+                if (ObjectUtils.isNotEmpty(records.get(i))) {
+                    messagesArr.add(records.get(i));
+                }
+            }
+            messagesArr.forEach(message -> {
+                if (ObjectUtils.isNotEmpty(userHashMap.get(message.getUserId()))) {
+                    QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+                    userQueryWrapper.eq("userID", message.getUserId());
+                    userHashMap.put(message.getUserId(), userMapper.selectOne(userQueryWrapper));
+                }
+            });
+            userHashMap.forEach((id, user) -> {
+                usersArr.add(user);
+            });
+            if (1 == 1) {
+                System.out.println("========================================================================");
+                System.out.println(messagesArr);
+                System.out.println("========================================================================");
+            }
+            GroupMesRes groupMesRes = new GroupMesRes(messagesArr, usersArr);
+            return new Response()
+                    .builder()
+                    .msg("")
+                    .data(groupMesRes)
+                    .build();
+        }else {
+            return new Response()
+                    .builder()
+                    .code(Rcode.ERROR)
+                    .msg("获取群消息失败")
+                    .data("")
+                    .build();
+        }
     }
 }

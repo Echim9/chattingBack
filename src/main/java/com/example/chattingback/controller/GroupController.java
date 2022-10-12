@@ -1,8 +1,9 @@
 package com.example.chattingback.controller;
 
-import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.dbEntities.User;
+import com.example.chattingback.eneity.response.Response;
+import com.example.chattingback.mapper.UserMapper;
 import com.example.chattingback.service.imp.GroupServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +15,14 @@ import java.util.UUID;
 @RequestMapping("group")
 public class GroupController {
 
+
+    @Autowired
+    private UserMapper userMapper;
     @Autowired
     private GroupServiceImp groupServiceImp;
+
+    @Autowired
+    private com.example.chattingback.mapper.GroupMessage groupMessage;
 
     //创建群组
     @PostMapping("/createGroup")
@@ -50,4 +57,15 @@ public class GroupController {
         return groupServiceImp.findGroupByName(group);
     }
 
+    @GetMapping("/groupMessgaes")
+    public Response getGroupMessages(@PathVariable String groupId,@PathVariable int current, @PathVariable int pageSize) {
+        Response response = groupServiceImp.getGroupMessages(groupId, current, pageSize);
+        return response;
+    }
+
+    @PostMapping("")
+    public Response postGroups(@RequestBody String groupId){
+        Response response = groupServiceImp.postGroups(groupId);
+        return response;
+    }
 }

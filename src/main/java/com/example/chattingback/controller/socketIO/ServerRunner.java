@@ -6,16 +6,23 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 /**
  * @author Echim9
  * @date 2022/10/11 00:41
+ *
+ * 统一配置应用出事化处
  */
 @Component
 public class ServerRunner  implements ApplicationListener<ContextRefreshedEvent>{
 
-    @Autowired
+
+
+
+    @Resource
     private SocketIOHandler socketIOHandler;
-    @Autowired
+    @Resource
     private SocketIOServer socketIOServer;
 
     @Override
@@ -26,6 +33,9 @@ public class ServerRunner  implements ApplicationListener<ContextRefreshedEvent>
             System.out.println("socket.io启动成功");
         }
     }
+
+
+
 
 
     @Autowired

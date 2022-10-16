@@ -1,6 +1,8 @@
 package com.example.chattingback.service.imp;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.chattingback.eneity.dbEntities.FriendMessage;
 import com.example.chattingback.eneity.dbEntities.User;
@@ -12,12 +14,17 @@ import com.example.chattingback.mapper.FriendMessageMapper;
 import com.example.chattingback.mapper.UserFriendMapper;
 import com.example.chattingback.mapper.UserMapper;
 import com.example.chattingback.service.FriendService;
+import com.example.chattingback.utils.RedisUtil;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.chattingback.enums.RedisCache.CACHE_USER_FRIENDS;
+import static com.example.chattingback.enums.RedisCache.EXPIRE_TIME;
 
 @Service
 public class FriendServiceImp implements FriendService {
@@ -62,58 +69,57 @@ public class FriendServiceImp implements FriendService {
 
     @Override
     public Response getUserFriends(String userId) {
-        QueryWrapper<UserFriend> userFriendQueryWrapper = new QueryWrapper<>();
-        userFriendQueryWrapper
-                .isNotNull(userId)
-                .eq("userId", userId);
-        List<UserFriend> userFriends = userFriendMapper.selectList(userFriendQueryWrapper);
-        if (ObjectUtils.isEmpty(userFriends)) {
+        //先从redis里尝试取出
+        String userFriends = RedisUtil.get(CACHE_USER_FRIENDS + userId);
+        if (StringUtils.isEmpty(userFriends)) {
+            QueryWrapper<UserFriend> userFriendQueryWrapper = new QueryWrapper<>();
+            userFriendQueryWrapper
+                    .isNotNull(userId)
+                    .eq("userId", userId);
+            List<UserFriend> userFriendArr = userFriendMapper.selectList(userFriendQueryWrapper);
+            if (ObjectUtils.isEmpty(userFriendArr)) {
+                return Response
+                        .builder()
+                        .code(Rcode.FAIL)
+                        .msg("好友拉取失败或无好友")
+                        .data(null)
+                        .build();
+            } else if (!ObjectUtils.isEmpty(userFriendArr)) {
+                //存入redis
+                String userFriendArrJson = JSONObject.toJSONString(userFriendArr);
+                RedisUtil.set(CACHE_USER_FRIENDS + userId, userFriendArrJson,EXPIRE_TIME);
+                return Response
+                        .builder()
+                        .msg("好友拉取成功")
+                        .data(userFriendArr)
+                        .build();
+            }
             return Response
                     .builder()
-                    .code(Rcode.FAIL)
-                    .msg("好友拉取失败或无好友")
+                    .code(Rcode.ERROR)
+                    .msg("好友拉取错误，请联系管理员解决")
                     .data(null)
                     .build();
-        } else if (!ObjectUtils.isEmpty(userFriends)) {
+        } else {
+            String resultFromRedis = RedisUtil.get(CACHE_USER_FRIENDS + userId);
+            ArrayList friendsArr = JSONObject.toJavaObject(JSONObject.parseObject(resultFromRedis), ArrayList.class);
             return Response
                     .builder()
                     .msg("好友拉取成功")
-                    .data(userFriends)
+                    .data(friendsArr)
                     .build();
         }
-        return Response
-                .builder()
-                .code(Rcode.ERROR)
-                .msg("好友拉取错误，请联系管理员解决")
-                .data(null)
-                .build();
     }
 
-    //有大问题！之后需要修改，逻辑是错误的
+
     @Override
     public Response getFriendMessages(pagingParams data) {
         Page<FriendMessage> page = new Page<>((data.getCurrent() / data.getPageSize()) + 2, data.getPageSize());
-        QueryWrapper<FriendMessage> friendMessageQueryWrapper1 = new QueryWrapper<>();
-        friendMessageQueryWrapper1.eq("userId", data.getUserId()).eq("friendId", data.getFriendId()).orderByDesc("time");
-        QueryWrapper<FriendMessage> friendMessageQueryWrapper2 = new QueryWrapper<>();
-        friendMessageQueryWrapper2.eq("userId", data.getFriendId()).eq("friendId", data.getUserId()).orderByDesc("time");
-        Page<FriendMessage> friendMessages1 = friendMessageMapper.selectPage(page, friendMessageQueryWrapper1);
-        Page<FriendMessage> friendMessages2 = friendMessageMapper.selectPage(page, friendMessageQueryWrapper2);
-        List<FriendMessage> records1 = friendMessages1.getRecords();
-        List<FriendMessage> records2 = friendMessages2.getRecords();
-        ArrayList<FriendMessage> friendMessageArr = new ArrayList<>();
-        for (int i = data.getCurrent(); i < data.getCurrent() + data.getPageSize() - 1; i++) {
-            if (ObjectUtils.isNotEmpty(records1.get(i))) {
-                friendMessageArr.add(records1.get(i));
-            }
-        }for (int i = data.getCurrent(); i < data.getCurrent() + data.getPageSize() - 1; i++) {
-            if (ObjectUtils.isNotEmpty(records2.get(i))) {
-                friendMessageArr.add(records2.get(i));
-            }
-        }
+        IPage<FriendMessage> friendMessages = friendMessageMapper.selectFriendMessagesBySqlPage(page, data.getUserId(), data.getFriendId());
+        List<FriendMessage> records = friendMessages.getRecords();
         return new Response()
                 .builder()
-                .data(friendMessageArr)
+                .data(records)
                 .msg("")
                 .build();
     }

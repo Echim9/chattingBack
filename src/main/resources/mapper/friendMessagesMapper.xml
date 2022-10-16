@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.chattingback.mapper.FriendMessageMapper">
+    <select id="selectFriendMessagesBySql" resultType="com.example.chattingback.eneity.dbEntities.FriendMessage">
+        SELECT _id,userId,friendId,content,time,messageType
+        FROM friend_message
+        WHERE (userId = #{userId}
+        AND friendId = #{friendId})
+        OR (userId = #{friendId}
+        AND friendId = #{userId})
+        ORDER BY time DESC
+    </select>
+
+    <select id="selectFriendMessagesBySqlPage" resultType="com.example.chattingback.eneity.dbEntities.FriendMessage">
+        SELECT _id,userId,friendId,content,time,messageType
+        FROM friend_message
+        WHERE (userId = #{userId}
+          AND friendId = #{friendId})
+           OR (userId = #{friendId}
+          AND friendId = #{userId})
+        ORDER BY time DESC
+    </select>
+
+</mapper>
+

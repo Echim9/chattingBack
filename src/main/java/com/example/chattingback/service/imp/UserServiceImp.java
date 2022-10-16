@@ -1,19 +1,23 @@
 package com.example.chattingback.service.imp;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.chattingback.controller.socketIO.ServerRunner;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
 import com.example.chattingback.mapper.UserMapper;
 import com.example.chattingback.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 
 @Service
 public class UserServiceImp implements UserService {
-    @Autowired
+
+    @Resource
+    private ServerRunner serverRunner;
+    @Resource
     private UserMapper usermapper;
     @Override
     public Response postUsers(String userIds) {

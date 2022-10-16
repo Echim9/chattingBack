@@ -1,5 +1,6 @@
 package com.example.chattingback.eneity.dbEntities;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +12,8 @@ import lombok.NoArgsConstructor;
 @TableName("friend_message")
 public class FriendMessage {
 
+
+  @TableId
   private long _id;
   private String userId;
   private String friendId;

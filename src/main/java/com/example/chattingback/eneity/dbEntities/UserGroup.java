@@ -1,5 +1,6 @@
 package com.example.chattingback.eneity.dbEntities;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @TableName("group_map")
 public class UserGroup {
-
+  @TableId
   private long _id;
   private String groupId;
   private String userId;

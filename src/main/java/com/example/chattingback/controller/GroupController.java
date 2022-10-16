@@ -1,13 +1,14 @@
 package com.example.chattingback.controller;
 
+import com.example.chattingback.controller.socketIO.ServerRunner;
 import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.mapper.UserMapper;
 import com.example.chattingback.service.imp.GroupServiceImp;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.UUID;
 
@@ -15,13 +16,16 @@ import java.util.UUID;
 @RequestMapping("group")
 public class GroupController {
 
+    @Resource
+    private ServerRunner serverRunner;
 
-    @Autowired
+
+    @Resource
     private UserMapper userMapper;
-    @Autowired
+    @Resource
     private GroupServiceImp groupServiceImp;
 
-    @Autowired
+    @Resource
     private com.example.chattingback.mapper.GroupMessage groupMessage;
 
     //创建群组

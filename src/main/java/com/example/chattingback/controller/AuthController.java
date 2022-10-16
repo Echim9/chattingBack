@@ -1,10 +1,11 @@
 package com.example.chattingback.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.chattingback.eneity.response.LoginData;
-import com.example.chattingback.eneity.response.Response;
+import com.example.chattingback.bean.redissonBean;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.dbEntities.UserGroup;
+import com.example.chattingback.eneity.response.LoginData;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
 import com.example.chattingback.mapper.UserGroupMapper;
 import com.example.chattingback.mapper.UserMapper;
@@ -13,35 +14,41 @@ import com.example.chattingback.service.imp.GroupServiceImp;
 import com.example.chattingback.utils.JwtUtil;
 import com.example.chattingback.utils.VerifyUtil;
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.redisson.api.RBloomFilter;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
 @RestController
 @RequestMapping("auth")
 public class AuthController {
 
+    @Resource
+    private UserMapper userMapper;
+
     private static final String DEFAULT_ROOM = "Echim9的大家庭" ;
 
-    @Autowired
+    @Resource
     private JwtUtil jwtUtil;
 
-    @Autowired
+    @Resource
     private AuthServiceImp authServiceImp;
 
-    @Autowired
+    @Resource
     private GroupServiceImp groupServiceImp;
 
-    @Autowired
+    @Resource
     private UserGroupMapper userGroupMapper;
 
-    @Autowired
-    private UserMapper userMapper;
+    @Resource
+    private redissonBean redissonBean;
 
     @PostMapping("/register")
     public Response register(@RequestBody User user) {
+        RBloomFilter userBloomFilter = redissonBean.userBloomFilter;
         if (BooleanUtils.isFalse(VerifyUtil.isValidPassword(user.getPassword()))) {
             return new Response
                     .builder()
@@ -65,6 +72,9 @@ public class AuthController {
             userGroup.setGroupId(DEFAULT_ROOM);
             userGroup.setUserId(SecuritiedUser.getUserId());
             userGroupMapper.insert(userGroup);
+            //将用户id存入布隆过滤器
+            userBloomFilter.add(SecuritiedUser.getUserId());
+            System.out.println(SecuritiedUser.getUserId());
             return new Response
                     .builder()
                     .msg("注册成功")

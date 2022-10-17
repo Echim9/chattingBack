@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 public class redissonBean {
     //布隆过滤器装配初始化
 
-    public RBloomFilter userBloomFilter;
+    public static RBloomFilter userBloomFilter;
 
     public RBloomFilter groupBloomFilter;
 

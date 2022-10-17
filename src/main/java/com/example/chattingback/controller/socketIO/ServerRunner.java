@@ -1,6 +1,8 @@
 package com.example.chattingback.controller.socketIO;
 
 import com.corundumstudio.socketio.SocketIOServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -17,8 +19,7 @@ import javax.annotation.Resource;
 @Component
 public class ServerRunner  implements ApplicationListener<ContextRefreshedEvent>{
 
-
-
+    private Logger logger = LoggerFactory.getLogger(ServerRunner.class);
 
     @Resource
     private SocketIOHandler socketIOHandler;
@@ -30,7 +31,7 @@ public class ServerRunner  implements ApplicationListener<ContextRefreshedEvent>
         if (event.getApplicationContext().getParent() == null){
             socketIOServer.addListeners(socketIOHandler);
             socketIOServer.start();
-            System.out.println("socket.io启动成功");
+            logger.info("socket-io启动成功");
         }
     }
 

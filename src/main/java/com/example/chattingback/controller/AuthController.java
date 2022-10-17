@@ -91,30 +91,40 @@ public class AuthController {
 
     @PostMapping("/login")
     public Response login(@RequestBody User userSended) {
-        boolean matchUserResult = authServiceImp.matchUser(userSended);
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("username", userSended.getUsername());
-        User user = userMapper.selectOne(userQueryWrapper);
-        if (BooleanUtils.isTrue(matchUserResult)) {
-            System.out.println(new LoginData(user, JwtUtil.releaseToken(user)));
-            return Response
+        RBloomFilter userBloomFilter = redissonBean.userBloomFilter;
+        if (userBloomFilter.contains(Boolean.TRUE.equals(userSended.getUserId()))) {
+            boolean matchUserResult = authServiceImp.matchUser(userSended);
+            QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+            userQueryWrapper.eq("username", userSended.getUsername());
+            User user = userMapper.selectOne(userQueryWrapper);
+            if (BooleanUtils.isTrue(matchUserResult)) {
+                System.out.println(new LoginData(user, JwtUtil.releaseToken(user)));
+                return Response
+                        .builder()
+                        .msg("登陆成功")
+                        .data(new LoginData(user, JwtUtil.releaseToken(user)))
+                        .build();
+            } else if (BooleanUtils.isFalse(matchUserResult)) {
+                return Response
+                        .builder()
+                        .code(Rcode.FAIL)
+                        .msg("密码错误，登陆失败")
+                        .data("")
+                        .build();
+            }
+            return new Response
                     .builder()
-                    .msg("登陆成功")
-                    .data(new LoginData(user, JwtUtil.releaseToken(user)))
+                    .code(Rcode.ERROR)
+                    .msg("系统错误，请联系管理员")
+                    .data("")
                     .build();
-        } else if (BooleanUtils.isFalse(matchUserResult)) {
-            return Response
+        }else {
+            return new Response
                     .builder()
-                    .code(Rcode.FAIL)
-                    .msg("密码错误，登陆失败")
+                    .code(Rcode.ERROR)
+                    .msg("该用户不存在")
                     .data("")
                     .build();
         }
-        return new Response
-                .builder()
-                .code(Rcode.ERROR)
-                .msg("系统错误，请联系管理员")
-                .data("")
-                .build();
     }
 }

@@ -29,6 +29,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,8 @@ import static com.example.chattingback.enums.RedisCache.*;
 
 @Component
 public class SocketIOHandler {
+
+    private Logger logger = LoggerFactory.getLogger(SocketIOHandler.class);
 
 
     @Resource
@@ -92,7 +96,7 @@ public class SocketIOHandler {
         client.joinRoom(DEFAULT_ROOM);
         UUID sessionId = client.getSessionId();
         clientCache.saveClient(userId, sessionId, client);
-        System.out.println("userId: " + userId + "连接建立成功 - " + sessionId);
+        logger.info("userId:{}连接成功,sessionID{}",userId, sessionId);
     }
 
     /**
@@ -104,7 +108,7 @@ public class SocketIOHandler {
         UUID sessionId = client.getSessionId();
         clientCache.deleteSessionClientByUserId(userId, sessionId);
         getActiveGroupUser();
-        System.out.println("userId: " + userId + "连接关闭成功 - " + sessionId);
+        logger.info("userId:{}断开连接成功,sessionId{}",userId, sessionId);
 
     }
 
@@ -176,7 +180,7 @@ public class SocketIOHandler {
             //获取用户加入的全部群组
             String userGroupsResult = RedisUtil.get(CACHE_USER_GROUPS + isUser.getUserId());
             if (StringUtils.isNotEmpty(userGroupsResult)) {
-                System.out.println(userGroupsResult);
+                //System.out.println(userGroupsResult);
                 JSONArray jsonArray = JSONArray.parse(userGroupsResult);
                 List<UserGroup> userGroupsResults = jsonArray.toJavaList(UserGroup.class);
                 userGroups.addAll(userGroupsResults);
@@ -347,6 +351,7 @@ public class SocketIOHandler {
                 System.out.println(payload);
                 System.out.println("===============================================================");
             }
+            logger.info("{}", payload);
             client.sendEvent("chatData",
                     new Response()
                             .builder()
@@ -365,7 +370,7 @@ public class SocketIOHandler {
         userQueryWrapper
                 .isNotNull("userId")
                 .eq("userId", group.getUserId());
-        if (1 == 1) {
+        if (1 == 0) {
             System.out.println("group:" + group);
             System.out.println("user:" + group.getUserId());
         }
@@ -379,7 +384,7 @@ public class SocketIOHandler {
                 int result = groupMapper.insert(group);
                 if (result > 0) {
                     client.joinRoom(group.getGroupId());
-                    System.out.println(userGroup);
+                    //System.out.println(userGroup);
                     userGroup.setGroupId(group.getGroupId());
                     int addRes = userGroupMapper.insert(userGroup);
                     if (addRes != 0) {
@@ -407,7 +412,7 @@ public class SocketIOHandler {
                 return;
             }
         } else {
-            System.out.println(isUser);
+            //System.out.println(isUser);
             client.sendEvent("addGroup",
                     new Response()
                             .builder()
@@ -423,7 +428,7 @@ public class SocketIOHandler {
     //2022.10.9测试成功（显示还有显示问题
     @OnEvent("joinGroup")
     public void joinGroup(SocketIOClient client, AckRequest ackRequest, UserGroup usergroup) {
-        if (1 == 1) {
+        if (1 == 0) {
             System.out.println("usergroup===============================" + usergroup);
             System.out.println("group:" + usergroup.getGroupId());
             System.out.println("user:" + usergroup.getUserId());
@@ -540,7 +545,7 @@ public class SocketIOHandler {
                             .build()
             );
         } else {
-            if (1 == 1) {
+            if (1 == 0) {
                 System.out.println("=======================加入群组失败==========================");
                 System.out.println(group);
                 System.out.println(user);
@@ -561,7 +566,7 @@ public class SocketIOHandler {
     //2022.10.9测试成功，不确定是否双向完成
     @OnEvent("addFriend")
     public void addFriend(SocketIOClient client, AckRequest ackRequest, UserFriend userFriend) {
-        System.out.println(userFriend.getFriendId());
+       // System.out.println(userFriend.getFriendId());
         boolean contains = redissonBean.userBloomFilter.contains(userFriend.getFriendId());
         if (Boolean.TRUE.equals(contains)) {
             QueryWrapper<User> userQueryWrapper1 = new QueryWrapper<>();
@@ -570,7 +575,7 @@ public class SocketIOHandler {
             userQueryWrapper2.eq("userId", userFriend.getFriendId());
             User friend = userMapper.selectOne(userQueryWrapper2);
             User user = userMapper.selectOne(userQueryWrapper1);
-            if (1 == 1) {
+            if (1 == 0) {
                 System.out.println("userFriend:" + userFriend);
                 System.out.println("addfriend:" + friend);
                 System.out.println("adduser:" + user);
@@ -684,7 +689,7 @@ public class SocketIOHandler {
     //2022.10.9测试成功，不确定是否双向完成
     @OnEvent("joinFriendSocket")
     public void addFriendSocket(SocketIOClient client, AckRequest ackRequest, UserFriend userFriend) {
-        System.out.println("进入frinendSocket连接");
+        logger.info("用户{}进入用户{}聊天连接", userFriend.getUserId(), userFriend.getFriendId());
         String roomId;
         if (StringUtils.isNotEmpty(userFriend.getFriendId()) && StringUtils.isNotEmpty(userFriend.getUserId())) {
             QueryWrapper<UserFriend> userFriendQueryWrapper1 = new QueryWrapper<>();
@@ -870,7 +875,7 @@ public class SocketIOHandler {
                     }
                     HashMap<String, User> stringUserHashMap = new HashMap<>();
                     stringUserHashMap.put(user.getUserId(), user);
-                    System.out.println(stringUserHashMap);
+                    //System.out.println(stringUserHashMap);
                     activeGroupUserGather.put(userGroup.getGroupId(), stringUserHashMap);
                 }
             });

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GroupMessageDto {
 
+    private long _id;
+
     private String groupId;
 
     private String userId;

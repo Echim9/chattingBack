@@ -28,7 +28,7 @@ public class FriendController {
     @GetMapping("/friendMessages")
     public  Response getFriendMessage(pagingParams data){
         Response response = friendServiceImp.getFriendMessages(data);
-        if (1 == 1) {
+        if (1 == 0) {
             System.out.println("=========================================================");
             System.out.println(response.getData().toString());
         }

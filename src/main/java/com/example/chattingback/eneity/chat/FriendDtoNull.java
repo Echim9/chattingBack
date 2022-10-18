@@ -5,11 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Echim9
+ * @date 2022/10/18 14:40
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FriendDto {
-
+public class FriendDtoNull {
     private String username;
 
     private String userId;
@@ -19,8 +22,6 @@ public class FriendDto {
     private String role;
 
     private String tag;
-
-    private FriendMessageDto[] messages;
 
     private long createTime;
 

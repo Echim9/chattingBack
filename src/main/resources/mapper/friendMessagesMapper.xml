@@ -9,7 +9,7 @@
         AND friendId = #{friendId})
         OR (userId = #{friendId}
         AND friendId = #{userId})
-        ORDER BY time DESC
+        ORDER BY time ASC
     </select>
 
     <select id="selectFriendMessagesBySqlPage" resultType="com.example.chattingback.eneity.dbEntities.FriendMessage">
@@ -19,7 +19,8 @@
           AND friendId = #{friendId})
            OR (userId = #{friendId}
           AND friendId = #{userId})
-        ORDER BY time DESC
+        ORDER BY time ASC
+        LIMIT #{current}, #{pagesize}
     </select>
 
 </mapper>

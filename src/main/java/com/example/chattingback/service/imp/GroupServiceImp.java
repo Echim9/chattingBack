@@ -1,13 +1,12 @@
 package com.example.chattingback.service.imp;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.dbEntities.GroupMessage;
-import com.example.chattingback.eneity.response.GroupMesRes;
-import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.dbEntities.UserGroup;
+import com.example.chattingback.eneity.response.GroupMesRes;
+import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
 import com.example.chattingback.mapper.GroupMapper;
 import com.example.chattingback.mapper.UserGroupMapper;
@@ -227,14 +226,15 @@ public class GroupServiceImp implements GroupService {
             HashMap<String, User> userHashMap = new HashMap<>();
             ArrayList<GroupMessage> messagesArr = new ArrayList<>();
             ArrayList<User> usersArr = new ArrayList<>();
-            Page<GroupMessage> page = new Page<>((current / pageSize) + 2, pageSize);
-            QueryWrapper<GroupMessage> groupMessageQueryWrapper = new QueryWrapper<>();
-            groupMessageQueryWrapper
-                    .eq("groupId", groupId)
-                    .orderByDesc("time");
-            Page<GroupMessage> groupMessagePage = groupMessage.selectPage(page, groupMessageQueryWrapper);
-            List<GroupMessage> records = groupMessagePage.getRecords();
-            for (int i = current; i < current + pageSize - 1; i++) {
+            ArrayList<GroupMessage> records = groupMessage.selectLastPageGroupMessages(groupId, current, pageSize);
+            if (ObjectUtils.isEmpty(records)) {
+                return new Response()
+                        .builder()
+                        .msg("已无更多消息")
+                        .data("")
+                        .build();
+            }
+            for (int i = current; i < records.size(); i++) {
                 if (ObjectUtils.isNotEmpty(records.get(i))) {
                     messagesArr.add(records.get(i));
                 }
@@ -249,7 +249,7 @@ public class GroupServiceImp implements GroupService {
             userHashMap.forEach((id, user) -> {
                 usersArr.add(user);
             });
-            if (1 == 1) {
+            if (1 == 0) {
                 System.out.println("========================================================================");
                 System.out.println(messagesArr);
                 System.out.println("========================================================================");

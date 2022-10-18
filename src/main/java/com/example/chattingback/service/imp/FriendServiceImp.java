@@ -2,11 +2,10 @@ package com.example.chattingback.service.imp;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.chattingback.eneity.dbEntities.FriendMessage;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.dbEntities.UserFriend;
+import com.example.chattingback.eneity.response.GroupMesRes;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.eneity.response.pagingParams;
 import com.example.chattingback.enums.Rcode;
@@ -114,12 +113,27 @@ public class FriendServiceImp implements FriendService {
 
     @Override
     public Response getFriendMessages(pagingParams data) {
-        Page<FriendMessage> page = new Page<>((data.getCurrent() / data.getPageSize()) + 2, data.getPageSize());
-        IPage<FriendMessage> friendMessages = friendMessageMapper.selectFriendMessagesBySqlPage(page, data.getUserId(), data.getFriendId());
-        List<FriendMessage> records = friendMessages.getRecords();
+        ArrayList<FriendMessage> friendMessages = friendMessageMapper.selectFriendMessagesBySqlPage(data.getUserId(), data.getFriendId(), data.getCurrent(), data.getPageSize());
+        GroupMesRes groupMesRes = new GroupMesRes();
+        groupMesRes.setMessageArr(friendMessages);
+        for (FriendMessage message : friendMessages) {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("userId", message.getUserId());
+            User user = userMapper.selectOne(queryWrapper);
+            if (ObjectUtils.isEmpty(user)) {
+                groupMesRes.getUserArr().add(user);
+            }
+        }
+        if (ObjectUtils.isEmpty(friendMessages)){
+            return new Response()
+                    .builder()
+                    .data("")
+                    .msg("已无更多信息")
+                    .build();
+        }
         return new Response()
                 .builder()
-                .data(records)
+                .data(groupMesRes)
                 .msg("")
                 .build();
     }

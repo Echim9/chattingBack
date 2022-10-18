@@ -91,8 +91,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public Response login(@RequestBody User userSended) {
-        RBloomFilter userBloomFilter = redissonBean.userBloomFilter;
-        if (userBloomFilter.contains(Boolean.TRUE.equals(userSended.getUserId()))) {
+//        RBloomFilter userBloomFilter = redissonBean.userBloomFilter;
+//        if (userBloomFilter.contains(Boolean.TRUE.equals(userSended.getUserId()))) {
             boolean matchUserResult = authServiceImp.matchUser(userSended);
             QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
             userQueryWrapper.eq("username", userSended.getUsername());
@@ -118,13 +118,13 @@ public class AuthController {
                     .msg("系统错误，请联系管理员")
                     .data("")
                     .build();
-        }else {
-            return new Response
-                    .builder()
-                    .code(Rcode.ERROR)
-                    .msg("该用户不存在")
-                    .data("")
-                    .build();
-        }
+//        }else {
+//            return new Response
+//                    .builder()
+//                    .code(Rcode.ERROR)
+//                    .msg("该用户不存在")
+//                    .data("")
+//                    .build();
+//        }
     }
 }

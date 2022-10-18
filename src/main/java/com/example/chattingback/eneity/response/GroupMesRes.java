@@ -1,6 +1,5 @@
 package com.example.chattingback.eneity.response;
 
-import com.example.chattingback.eneity.dbEntities.GroupMessage;
 import com.example.chattingback.eneity.dbEntities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,10 +14,10 @@ import java.util.ArrayList;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupMesRes {
+public class GroupMesRes<T>  {
 
-    private ArrayList<GroupMessage> messages;
+    private T messageArr;
 
-    private ArrayList<User> users;
+    private ArrayList<User> userArr;
 
 }

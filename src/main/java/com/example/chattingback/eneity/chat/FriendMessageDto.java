@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FriendMessageDto {
 
+    private long _id;
+
     private String friendId;
 
     private String userId;
@@ -32,4 +34,5 @@ public class FriendMessageDto {
         friendMessage.setMessageType(friendMessageDto.getMessageType());
         return friendMessage;
     }
+
 }

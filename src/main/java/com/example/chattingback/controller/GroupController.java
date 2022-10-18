@@ -61,8 +61,8 @@ public class GroupController {
         return groupServiceImp.findGroupByName(group);
     }
 
-    @GetMapping("/groupMessgaes")
-    public Response getGroupMessages(@PathVariable String groupId,@PathVariable int current, @PathVariable int pageSize) {
+    @GetMapping("/groupMessages")
+    public Response getGroupMessages(@RequestParam String groupId,@RequestParam int current, @RequestParam int pageSize) {
         Response response = groupServiceImp.getGroupMessages(groupId, current, pageSize);
         return response;
     }

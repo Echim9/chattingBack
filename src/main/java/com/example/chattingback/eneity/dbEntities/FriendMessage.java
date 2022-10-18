@@ -1,10 +1,13 @@
 package com.example.chattingback.eneity.dbEntities;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class FriendMessage {
 
 
-  @TableId
+  @TableId(type = IdType.AUTO)
   private long _id;
   private String userId;
   private String friendId;
@@ -22,13 +25,12 @@ public class FriendMessage {
 
   private String messageType;
 
-
-  public long getId() {
+  public long get_id() {
     return _id;
   }
 
-  public void setId(long id) {
-    this._id = id;
+  public void set_id(long _id) {
+    this._id = _id;
   }
 
   public String getMessageType() {
@@ -74,4 +76,13 @@ public class FriendMessage {
     this.time = time;
   }
 
+  public static FriendMessage defaultMessage(User user, User friend){
+    FriendMessage friendMessage = new FriendMessage();
+    friendMessage.setUserId(user.getUserId());
+    friendMessage.setFriendId(friend.getUserId());
+    friendMessage.setMessageType("text");
+    friendMessage.setContent(user.getUsername() + "成功添加" + friend.getUsername() + "为好友");
+    friendMessage.setTime(new Date().getTime());
+    return friendMessage;
+  }
 }

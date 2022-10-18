@@ -4,11 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Echim9
+ * @date 2022/10/18 14:41
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupDto {
-
+public class GroupDtoNull {
     private String groupId;
 
     private String userId;// 群主id
@@ -16,8 +19,6 @@ public class GroupDto {
     private String groupName;
 
     private String notice;
-
-    private GroupMessageDto[] messages;
 
     private long createTime;
 }

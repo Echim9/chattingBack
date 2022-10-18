@@ -1,6 +1,7 @@
 package com.example.chattingback.eneity.dbEntities;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("group_message")
 public class GroupMessage {
 
-  @TableId
+  @TableId(type = IdType.AUTO)
   private long _id;
   private String userId;
   private String groupId;
@@ -26,8 +27,21 @@ public class GroupMessage {
     this.time = time;
   }
 
+  public String getMessageType() {
+    return messageType;
+  }
 
+  public long get_id() {
+    return _id;
+  }
 
+  public void set_id(long _id) {
+    this._id = _id;
+  }
+
+  public void setMessageType(String messageType) {
+    this.messageType = messageType;
+  }
 
   public long getId() {
     return _id;

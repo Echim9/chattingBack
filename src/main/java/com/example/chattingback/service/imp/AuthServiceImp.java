@@ -3,7 +3,7 @@ package com.example.chattingback.service.imp;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.chattingback.controller.socketIO.ServerRunner;
 import com.example.chattingback.eneity.dbEntities.User;
-import com.example.chattingback.mapper.UserMapper;
+import com.example.chattingback.Resource.mapper.UserMapper;
 import com.example.chattingback.service.AuthService;
 import com.example.chattingback.utils.MyBeanUtils;
 import org.apache.commons.lang3.BooleanUtils;

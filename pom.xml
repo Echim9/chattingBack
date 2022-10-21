@@ -172,7 +172,16 @@
             <artifactId>redisson</artifactId>
             <version>3.8.2</version>
         </dependency>
+
+        <!-- 定时任务调度 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+            <version>2.3.7.RELEASE</version>
+        </dependency>
     </dependencies>
+
+
 
     <build>
         <resources>

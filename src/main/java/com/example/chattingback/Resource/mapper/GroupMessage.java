@@ -1,4 +1,4 @@
-package com.example.chattingback.mapper;
+package com.example.chattingback.Resource.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;

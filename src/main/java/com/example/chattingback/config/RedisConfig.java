@@ -52,11 +52,12 @@ public class RedisConfig {
         //jedisPoolConfig.setBlockWhenExhausted(blockWhenExhausted);
         // 是否启用pool的jmx管理功能, 默认true
         //jedisPoolConfig.setJmxEnabled(JmxEnabled);
-        return new JedisPool(jedisPoolConfig, host, port, timeout, password);
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password);
+        return jedisPool;
     }
 
     @Bean
-    public Config redissionConfig() {
+    public Config redissonConfig() {
         Config config = new Config();
         SingleServerConfig singleServerConfig = config.useSingleServer();
         singleServerConfig.setAddress(address);
@@ -69,7 +70,7 @@ public class RedisConfig {
 
     @Bean
     public RedissonClient redissonClient() {
-        return Redisson.create(redissionConfig());
+        return Redisson.create(redissonConfig());
     }
 
     //布隆过滤器生成

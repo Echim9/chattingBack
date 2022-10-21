@@ -1,5 +1,7 @@
 package com.example.chattingback.service;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 
 /**
@@ -8,6 +10,6 @@ import java.io.IOException;
  */
 
 public interface AvatarService {
-    public byte[] returnAvatar(String avatar) throws IOException;
+    public String setAvatar(MultipartFile file) throws IOException;
     }
 

@@ -4,10 +4,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
 
+
 @Component
 public class VerifyUtil {
+
     private static final String REGEX_DOMAINS_NAME ="^[\u4E00-\u9FA5A-Za-z0-9_]{2,20}$";
-    private static final String REGEX_USERNAME="^[A-Za-z0-9_]{5,25}$";
+    private static final String REGEX_USERNAME="^[A-Za-z0-9_]{3,10}$";
     private static final String REGEX_NAME="^[\u4E00-\u9FA50-9._·]{2,10}$";
     private static final String REGEX_ALIAS="^[\u4E00-\u9FA50-9._·A-Za-z]{2,20}$";
     private static final String REGEX_QQ="[1-9][0-9]{4,}";
@@ -29,7 +31,7 @@ public class VerifyUtil {
         System.out.println(test);
         System.out.println(Double.parseDouble(String.format("%.16f",score+(Math.pow(10,10)-(int)(1659537578861L /1000))*Math.pow(10.,-16))));
         */
-        System.out.println(isValidFlag("lr_studio{Ui123}"));
+        System.out.println(isValidUsername("sadasd"));
     }
 
     public static Boolean isMobile(String str){

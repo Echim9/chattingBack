@@ -1,11 +1,14 @@
 package com.example.chattingback.service.imp;
 
 import com.example.chattingback.service.AvatarService;
+import com.example.chattingback.utils.imageUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -17,13 +20,21 @@ public class AvatarServiceImp implements AvatarService {
     String path = ClassUtils.getDefaultClassLoader().getResource("").getPath();
     String filePath = path + "static/avatar/";
 
-    @Override
-    public byte[] returnAvatar(String avatar) throws IOException {
-        File file = new File(filePath + avatar);
-        FileInputStream inputStream = new FileInputStream(file);
-        byte[] bytes = new byte[inputStream.available()];
-        inputStream.read(bytes, 0, inputStream.available());
-        return bytes;
+    String avatarUrl = "api/avatar/";
 
+    @Override
+    public String setAvatar(MultipartFile multipartFile) throws IOException {
+        File file = imageUtils.transferToFile(multipartFile);
+        BufferedImage image = ImageIO.read(file);
+        String imageName = imageUtils.createImageName();
+        String name = file.getName();
+        String newName = imageName + name;
+        boolean writeImage = imageUtils.writeImage(image, newName, filePath);
+        if (Boolean.TRUE.equals(writeImage)){
+            return avatarUrl + filePath;
+        }
+        else {
+            return "";
+        }
     }
 }

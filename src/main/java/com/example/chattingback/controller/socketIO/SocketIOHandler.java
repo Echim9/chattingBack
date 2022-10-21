@@ -8,6 +8,7 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
+import com.example.chattingback.Resource.mapper.*;
 import com.example.chattingback.bean.redissonBean;
 import com.example.chattingback.eneity.chat.FriendDto;
 import com.example.chattingback.eneity.chat.FriendMessageDto;
@@ -19,7 +20,6 @@ import com.example.chattingback.eneity.payload;
 import com.example.chattingback.eneity.response.JoinRes;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
-import com.example.chattingback.mapper.*;
 import com.example.chattingback.utils.MyBeanUtils;
 import com.example.chattingback.utils.RedisUtil;
 import com.example.chattingback.utils.imageUtils;
@@ -43,7 +43,7 @@ import static com.example.chattingback.enums.RedisCache.*;
 @Component
 public class SocketIOHandler {
 
-    private Logger logger = LoggerFactory.getLogger(SocketIOHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(SocketIOHandler.class);
 
 
     @Resource
@@ -52,7 +52,7 @@ public class SocketIOHandler {
     private static final String DEFAULT_ROOM = "Echim9的大家庭";
 
     @Resource
-    private com.example.chattingback.mapper.GroupMessage groupMessageMapper;
+    private  com.example.chattingback.Resource.mapper.GroupMessage groupMessageMapper;
 
     @Resource
     private RedissonClient redissonClient;
@@ -61,7 +61,7 @@ public class SocketIOHandler {
     private imageUtils imageutils;
 
     @Resource
-    private FriendMessageMapper friendMessageMapper;
+    private  FriendMessageMapper friendMessageMapper;
 
 
     @Resource
@@ -95,7 +95,7 @@ public class SocketIOHandler {
         client.joinRoom(DEFAULT_ROOM);
         UUID sessionId = client.getSessionId();
         clientCache.saveClient(userId, sessionId, client);
-        logger.info("userId:{}连接成功,sessionID{}",userId, sessionId);
+        logger.info("userId:{}连接成功,sessionID{}", userId, sessionId);
     }
 
     /**
@@ -107,7 +107,7 @@ public class SocketIOHandler {
         UUID sessionId = client.getSessionId();
         clientCache.deleteSessionClientByUserId(userId, sessionId);
         getActiveGroupUser();
-        logger.info("userId:{}断开连接成功,sessionId{}",userId, sessionId);
+        logger.info("userId:{}断开连接成功,sessionId{}", userId, sessionId);
 
     }
 
@@ -120,6 +120,10 @@ public class SocketIOHandler {
     //2022.10.10测试成功
     @OnEvent("chatData")
     public void chatEvent(SocketIOClient client, AckRequest ackRequest, User user) {
+        /**
+         * 每一次获取聊天数据都先在redis里面进行一次查询，减轻数据库压力
+         *
+         * */
         //布隆过滤器
         RBloomFilter userBloomFilter = redissonBean.userBloomFilter;
 //        RBloomFilter groupBloomFilter = redissonBean.groupBloomFilter;
@@ -170,11 +174,6 @@ public class SocketIOHandler {
 //            });
 //        }
         if (ObjectUtils.isNotEmpty(isUser)) {
-            /**
-             * 每一次获取数据都先在redis里面进行一次查询，减轻数据库压力
-             *如果没有就将数据存入redis
-             *
-             * */
             ArrayList<UserGroup> userGroups = new ArrayList<>();
             //获取用户加入的全部群组
 //            String userGroupsResult = RedisUtil.get(CACHE_USER_GROUPS + isUser.getUserId());
@@ -184,11 +183,11 @@ public class SocketIOHandler {
 //                List<UserGroup> userGroupsResults = jsonArray.toJavaList(UserGroup.class);
 //                userGroups.addAll(userGroupsResults);
 //            } else {
-                QueryWrapper<UserGroup> userGroupQueryWrapper = new QueryWrapper<>();
-                userGroupQueryWrapper.eq("userId", user.getUserId());
-                List<UserGroup> DBuserGroups = userGroupMapper.selectList(userGroupQueryWrapper);
-                userGroups.addAll(DBuserGroups);
-                RedisUtil.set(CACHE_USER_GROUPS + isUser.getUserId(), JSONObject.toJSONString(userGroups), EXPIRE_TIME);
+            QueryWrapper<UserGroup> userGroupQueryWrapper = new QueryWrapper<>();
+            userGroupQueryWrapper.eq("userId", user.getUserId());
+            List<UserGroup> DBuserGroups = userGroupMapper.selectList(userGroupQueryWrapper);
+            userGroups.addAll(DBuserGroups);
+            RedisUtil.set(CACHE_USER_GROUPS + isUser.getUserId(), JSONObject.toJSONString(userGroups), EXPIRE_TIME);
 //            }
             ArrayList<UserFriend> userFriends = new ArrayList<>();
 //            String userFriendsResult = RedisUtil.get(CACHE_USER_FRIENDS + isUser.getUserId());
@@ -197,12 +196,12 @@ public class SocketIOHandler {
 //                List<UserFriend> userFriendsResultRedis = jsonArray.toJavaList(UserFriend.class);
 //                userFriends.addAll(userFriendsResultRedis);
 //            } else {
-                //获取全部好友
-                QueryWrapper<UserFriend> userFriendQueryWrapper = new QueryWrapper<>();
-                userFriendQueryWrapper.eq("userId", user.getUserId());
-                List<UserFriend> DBUserFriends = userFriendMapper.selectList(userFriendQueryWrapper);
-                userFriends.addAll(DBUserFriends);
-                RedisUtil.set(CACHE_USER_FRIENDS + isUser.getUserId(), JSONObject.toJSONString(userFriends), EXPIRE_TIME);
+            //获取全部好友
+            QueryWrapper<UserFriend> userFriendQueryWrapper = new QueryWrapper<>();
+            userFriendQueryWrapper.eq("userId", user.getUserId());
+            List<UserFriend> DBUserFriends = userFriendMapper.selectList(userFriendQueryWrapper);
+            userFriends.addAll(DBUserFriends);
+            RedisUtil.set(CACHE_USER_FRIENDS + isUser.getUserId(), JSONObject.toJSONString(userFriends), EXPIRE_TIME);
 //            }
             //获取用户所加入群组的基本信息
             userGroups.forEach(group -> {
@@ -216,9 +215,9 @@ public class SocketIOHandler {
 //                    JSONObject jsonObject = JSONObject.parseObject(groupResult);
 //                    groupArrayList.add(jsonObject.toJavaObject(GroupDto.class));
 //                } else {
-                    GroupDto groupDto = MyBeanUtils.copyProperties(groupMapper.selectOne(new QueryWrapper<Group>().eq("groupId", group.getGroupId())), GroupDto.class);
-                    groupArrayList.add(groupDto);
-                    RedisUtil.set(CACHE_GROUP + group.getGroupId(), JSONObject.toJSONString(groupDto), EXPIRE_TIME);
+                GroupDto groupDto = MyBeanUtils.copyProperties(groupMapper.selectOne(new QueryWrapper<Group>().eq("groupId", group.getGroupId())), GroupDto.class);
+                groupArrayList.add(groupDto);
+                RedisUtil.set(CACHE_GROUP + group.getGroupId(), JSONObject.toJSONString(groupDto), EXPIRE_TIME);
 //                }
 
             });
@@ -239,15 +238,18 @@ public class SocketIOHandler {
 //                    JSONObject jsonObject = JSONObject.parseObject(groupMessageResult);
 //                    groupMessageDtos.add(jsonObject.toJavaObject(GroupMessageDto.class));
 //                } else {
-                    QueryWrapper<GroupMessage> groupMessageDtoQueryWrapper = new QueryWrapper<>();
-                    groupMessageDtoQueryWrapper.eq("groupId", groupDto.getGroupId());
-                    List<GroupMessage> groupMessages = groupMessageMapper.selectList(groupMessageDtoQueryWrapper);
-                    groupMessages.forEach(groupMessage -> groupMessageDtos.add(MyBeanUtils.copyProperties(groupMessage, GroupMessageDto.class)));
-                    groupMessageDtos.forEach(groupMessageDto -> {
-                        String jsonString = JSONObject.toJSONString(groupMessageDto);
-                        RedisUtil.set(CACHE_GROUPS_MESSAGES + groupMessageDto.getGroupId(), jsonString, EXPIRE_TIME);
-                    });
-
+                ArrayList<GroupMessage> messages = new ArrayList<>();
+                QueryWrapper<GroupMessage> groupMessageDtoQueryWrapper = new QueryWrapper<>();
+                groupMessageDtoQueryWrapper.eq("groupId", groupDto.getGroupId());
+                List<GroupMessage> groupMessagesFromMysql = groupMessageMapper.selectList(groupMessageDtoQueryWrapper);
+                if (ObjectUtils.isNotEmpty(groupMessagesFromMysql)) {
+                    messages.addAll(groupMessagesFromMysql);
+                }
+                ArrayList<GroupMessage> groupMessagesFromRedis = RedisUtil.getGroupMessagesFromRedis(groupDto.getGroupId());
+                if (ObjectUtils.isNotEmpty(groupMessagesFromRedis)){
+                    messages.addAll(groupMessagesFromRedis);
+                }
+                messages.forEach(groupMessage -> groupMessageDtos.add(MyBeanUtils.copyProperties(groupMessage, GroupMessageDto.class)));
                 groupMessagesArray.put(groupDto.getGroupId(), groupMessageDtos);
                 //获取群聊信息的每个发送者的信息
                 int size = groupMessageDtos.size();
@@ -257,11 +259,11 @@ public class SocketIOHandler {
 //                        JSONObject jsonObject = JSONObject.parseObject(userOfMessages);
 //                        userHashMap.put(groupMessageDtos.get(j).getUserId(), jsonObject.toJavaObject(User.class));
 //                    } else {
-                        QueryWrapper<User> userQueryWrapper1 = new QueryWrapper<>();
-                        userQueryWrapper1.eq("userId", groupMessageDtos.get(j).getUserId());
-                        User thisUser = userMapper.selectOne(userQueryWrapper1);
-                        userHashMap.put(groupMessageDtos.get(j).getUserId(), thisUser);
-                        RedisUtil.set(CACHE_USER + groupMessageDtos.get(j).getUserId(), JSONObject.toJSONString(MyBeanUtils.copyProperties(thisUser, FriendDto.class)), EXPIRE_TIME);
+                    QueryWrapper<User> userQueryWrapper1 = new QueryWrapper<>();
+                    userQueryWrapper1.eq("userId", groupMessageDtos.get(j).getUserId());
+                    User thisUser = userMapper.selectOne(userQueryWrapper1);
+                    userHashMap.put(groupMessageDtos.get(j).getUserId(), thisUser);
+                    RedisUtil.set(CACHE_USER + groupMessageDtos.get(j).getUserId(), JSONObject.toJSONString(MyBeanUtils.copyProperties(thisUser, FriendDto.class)), EXPIRE_TIME);
 //                    }
                 }
             }
@@ -279,9 +281,9 @@ public class SocketIOHandler {
 //                    JSONObject jsonObject = JSONObject.parseObject(userFriendResult);
 //                    friendArrayList.add(jsonObject.toJavaObject(FriendDto.class));
 //                } else {
-                    FriendDto friendDto = MyBeanUtils.copyProperties(userMapper.selectOne(new QueryWrapper<User>().eq("userId", userFriend.getFriendId())), FriendDto.class);
-                    friendArrayList.add(friendDto);
-                    RedisUtil.set(CACHE_USER + friendDto.getUserId(), JSONObject.toJSONString(friendDto), EXPIRE_TIME);
+                FriendDto friendDto = MyBeanUtils.copyProperties(userMapper.selectOne(new QueryWrapper<User>().eq("userId", userFriend.getFriendId())), FriendDto.class);
+                friendArrayList.add(friendDto);
+                RedisUtil.set(CACHE_USER + friendDto.getUserId(), JSONObject.toJSONString(friendDto), EXPIRE_TIME);
 //                }
             });
             //获取用户与好友的聊天信息
@@ -307,12 +309,20 @@ public class SocketIOHandler {
 //                    JSONArray jsonArray = JSONArray.parseArray(result);
 //                    friendMessageDtosTmp.addAll(jsonArray.toJavaList(FriendMessageDto.class));
 //                } else {
-                    List<FriendMessage> friendMessages = friendMessageMapper.selectFriendMessagesBySql(userFriends.get(i).getUserId(), userFriends.get(i).getFriendId());
-                    friendMessages.forEach(friendMessage -> {
-                        FriendMessageDto messageDto = MyBeanUtils.copyProperties(friendMessage, FriendMessageDto.class);
-                        friendMessageDtosTmp.add(messageDto);
-                    });
-                    RedisUtil.set(CACHE_USER_FRIENDS_MESSAGES + roomId, JSONObject.toJSONString(friendMessageDtosTmp), EXPIRE_TIME);
+                ArrayList<FriendMessage> messages = new ArrayList<>();
+                List<FriendMessage> friendMessagesFromMysql = friendMessageMapper.selectFriendMessagesBySql(userFriends.get(i).getUserId(), userFriends.get(i).getFriendId());
+                if (ObjectUtils.isNotEmpty(friendMessagesFromMysql)) {
+                    messages.addAll(friendMessagesFromMysql);
+                }
+                ArrayList<FriendMessage> friendMessagesFromRedis = RedisUtil.getFriendMessagesFromRedis(roomId);
+                if (ObjectUtils.isNotEmpty(friendMessagesFromRedis)){
+                    messages.addAll(friendMessagesFromRedis);
+                }
+                messages.forEach(friendMessage -> {
+                    FriendMessageDto messageDto = MyBeanUtils.copyProperties(friendMessage, FriendMessageDto.class);
+                    friendMessageDtosTmp.add(messageDto);
+                });
+//                RedisUtil.set(CACHE_USER_FRIENDS_MESSAGES + roomId, JSONObject.toJSONString(friendMessageDtosTmp), EXPIRE_TIME);
 
 //                QueryWrapper<FriendMessage> friendMessageQueryWrapper1 = new QueryWrapper<>();
 //                friendMessageQueryWrapper1.eq("userId", userFriends.get(i).getUserId()).eq("friendId", userFriends.get(i).getFriendId()).orderByDesc("time");
@@ -351,7 +361,6 @@ public class SocketIOHandler {
                 System.out.println(payload);
                 System.out.println("===============================================================");
             }
-            logger.info("{}", payload);
             client.sendEvent("chatData",
                     new Response()
                             .builder()
@@ -434,58 +443,47 @@ public class SocketIOHandler {
             System.out.println("user:" + usergroup.getUserId());
         }
 //        if (redissonBean.groupBloomFilter.contains(usergroup.getGroupId())) {
-            String uID = RedisUtil.get(CACHE_USER + usergroup.getUserId());
-            User isUser = new User();
-            if (StringUtils.isEmpty(uID)) {
-                QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-                userQueryWrapper
-                        .isNotNull("userId")
-                        .eq("userId", usergroup.getUserId());
-                isUser = userMapper.selectOne(userQueryWrapper);
-                RedisUtil.set(CACHE_USER + usergroup.getUserId(), JSONObject.toJSONString(MyBeanUtils.copyProperties(isUser, FriendDto.class)), EXPIRE_TIME);
+        String uID = RedisUtil.get(CACHE_USER + usergroup.getUserId());
+        User isUser = new User();
+        if (StringUtils.isEmpty(uID)) {
+            QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+            userQueryWrapper
+                    .isNotNull("userId")
+                    .eq("userId", usergroup.getUserId());
+            isUser = userMapper.selectOne(userQueryWrapper);
+            RedisUtil.set(CACHE_USER + usergroup.getUserId(), JSONObject.toJSONString(MyBeanUtils.copyProperties(isUser, FriendDto.class)), EXPIRE_TIME);
+        } else {
+            isUser = JSONObject.parseObject(uID, User.class);
+        }
+        JoinRes joinRes = new JoinRes();
+        if (!ObjectUtils.isEmpty(isUser)) {
+            joinRes.setUser(isUser);
+            Group isGroup = new Group();
+            String groupJson = RedisUtil.get(CACHE_GROUP + usergroup.getGroupId());
+            if (StringUtils.isEmpty(groupJson)) {
+                QueryWrapper<Group> GroupQueryWrapper = new QueryWrapper<>();
+                GroupQueryWrapper.eq("groupId", usergroup.getGroupId());
+                isGroup = groupMapper.selectOne(GroupQueryWrapper);
+                RedisUtil.set(CACHE_GROUP + usergroup.getGroupId(), JSONObject.toJSONString(isGroup), EXPIRE_TIME);
             } else {
-                isUser = JSONObject.parseObject(uID, User.class);
+                isGroup = JSONObject.parseObject(groupJson, new Group().getClass());
             }
-            JoinRes joinRes = new JoinRes();
-            if (!ObjectUtils.isEmpty(isUser)) {
-                joinRes.setUser(isUser);
-                Group isGroup = new Group();
-                String groupJson = RedisUtil.get(CACHE_GROUP + usergroup.getGroupId());
-                if (StringUtils.isEmpty(groupJson)) {
-                    QueryWrapper<Group> GroupQueryWrapper = new QueryWrapper<>();
-                    GroupQueryWrapper.eq("groupId", usergroup.getGroupId());
-                    isGroup = groupMapper.selectOne(GroupQueryWrapper);
-                    RedisUtil.set(CACHE_GROUP + usergroup.getGroupId(), JSONObject.toJSONString(isGroup), EXPIRE_TIME);
-                } else {
-                    isGroup = JSONObject.parseObject(groupJson, new Group().getClass());
-                }
-                if (!ObjectUtils.isEmpty(isGroup)) {
-                    joinRes.setGroup(isGroup);
-                    QueryWrapper<UserGroup> userGroupQueryWrapper = new QueryWrapper<>();
-                    userGroupQueryWrapper.eq("userId", usergroup.getUserId()).eq("groupId", usergroup.getGroupId());
-                    if (ObjectUtils.isEmpty(userGroupMapper.selectOne(userGroupQueryWrapper))) {
-                        int result = userGroupMapper.insert(usergroup);
-                        if (result > 0) {
-                            client.joinRoom(isGroup.getGroupId());
-                            client.sendEvent("joinGroup",
-                                    new Response()
-                                            .builder()
-                                            .msg(isUser.getUsername() + "成功加入群组：" + isGroup.getGroupName())
-                                            .data(joinRes)
-                                            .build()
-                            );
-                            getActiveGroupUser();
-                            return;
-                        }
-                    } else {
+            if (!ObjectUtils.isEmpty(isGroup)) {
+                joinRes.setGroup(isGroup);
+                QueryWrapper<UserGroup> userGroupQueryWrapper = new QueryWrapper<>();
+                userGroupQueryWrapper.eq("userId", usergroup.getUserId()).eq("groupId", usergroup.getGroupId());
+                if (ObjectUtils.isEmpty(userGroupMapper.selectOne(userGroupQueryWrapper))) {
+                    int result = userGroupMapper.insert(usergroup);
+                    if (result > 0) {
+                        client.joinRoom(isGroup.getGroupId());
                         client.sendEvent("joinGroup",
                                 new Response()
                                         .builder()
-                                        .code(Rcode.FAIL)
-                                        .msg(isUser.getUsername() + "已在群组：" + isGroup.getGroupName())
-                                        .data(usergroup)
+                                        .msg(isUser.getUsername() + "成功加入群组：" + isGroup.getGroupName())
+                                        .data(joinRes)
                                         .build()
                         );
+                        getActiveGroupUser();
                         return;
                     }
                 } else {
@@ -493,8 +491,8 @@ public class SocketIOHandler {
                             new Response()
                                     .builder()
                                     .code(Rcode.FAIL)
-                                    .msg("群组不存在")
-                                    .data("")
+                                    .msg(isUser.getUsername() + "已在群组：" + isGroup.getGroupName())
+                                    .data(usergroup)
                                     .build()
                     );
                     return;
@@ -503,13 +501,24 @@ public class SocketIOHandler {
                 client.sendEvent("joinGroup",
                         new Response()
                                 .builder()
-                                .code(Rcode.ERROR)
-                                .msg("加入群组错误，请联系管理员")
+                                .code(Rcode.FAIL)
+                                .msg("群组不存在")
                                 .data("")
                                 .build()
                 );
                 return;
             }
+        } else {
+            client.sendEvent("joinGroup",
+                    new Response()
+                            .builder()
+                            .code(Rcode.ERROR)
+                            .msg("加入群组错误，请联系管理员")
+                            .data("")
+                            .build()
+            );
+            return;
+        }
 //        }else {
 //            client.sendEvent("joinGroup",
 //                    new Response()
@@ -566,117 +575,117 @@ public class SocketIOHandler {
     //2022.10.9测试成功，不确定是否双向完成
     @OnEvent("addFriend")
     public void addFriend(SocketIOClient client, AckRequest ackRequest, UserFriend userFriend) {
-       // System.out.println(userFriend.getFriendId());
+        // System.out.println(userFriend.getFriendId());
 //        boolean contains = redissonBean.userBloomFilter.contains(userFriend.getFriendId());
 //        if (Boolean.TRUE.equals(contains)) {
-            QueryWrapper<User> userQueryWrapper1 = new QueryWrapper<>();
-            QueryWrapper<User> userQueryWrapper2 = new QueryWrapper<>();
-            userQueryWrapper1.eq("userId", userFriend.getUserId());
-            userQueryWrapper2.eq("userId", userFriend.getFriendId());
-            User friend = userMapper.selectOne(userQueryWrapper2);
-            User user = userMapper.selectOne(userQueryWrapper1);
-            if (1 == 0) {
-                System.out.println("userFriend:" + userFriend);
-                System.out.println("addfriend:" + friend);
-                System.out.println("adduser:" + user);
-            }
-            String roomId = null;
-            if (ObjectUtils.isNotEmpty(user)) {
-                if (ObjectUtils.isNotEmpty(user) && ObjectUtils.isNotEmpty(friend)) {
-                    if (user.equals(friend)) {
-                        client.sendEvent("addFriend",
-                                new Response()
-                                        .builder()
-                                        .code(Rcode.FAIL)
-                                        .msg("不能添加自己为好友")
-                                        .data("")
-                                        .build());
-                    }
-                    QueryWrapper<UserFriend> userFriendQueryWrapper1 = new QueryWrapper<>();
-                    QueryWrapper<UserFriend> userFriendQueryWrapper2 = new QueryWrapper<>();
-                    userFriendQueryWrapper1.eq("userId", userFriend.getUserId()).eq("friendId", userFriend.getFriendId());
-                    userFriendQueryWrapper2.eq("userId", userFriend.getFriendId()).eq("friendId", userFriend.getUserId());
-                    UserFriend relation1 = userFriendMapper.selectOne(userFriendQueryWrapper1);
-                    UserFriend relation2 = userFriendMapper.selectOne(userFriendQueryWrapper2);
-                    if (1 == 0) {
-                        System.out.println("=======================================================================");
-                        //System.out.println(MyBeanUtils.strToASCII(userFriend.getUserId()) + ":" + MyBeanUtils.strToASCII(userFriend.getFriendId()));
-                        System.out.println("=======================================================================");
-                    }
-                    if (userFriend.getFriendId().compareTo(userFriend.getUserId()) > 0) {
-                        roomId = userFriend.getFriendId() + userFriend.getUserId();
-                    } else {
-                        roomId = userFriend.getUserId() + userFriend.getFriendId();
-                    }
-                    if (ObjectUtils.isNotEmpty(relation1) || ObjectUtils.isNotEmpty(relation2)) {
-                        client.sendEvent("addFriend",
-                                new Response()
-                                        .builder()
-                                        .code(Rcode.FAIL)
-                                        .msg("好友已存在")
-                                        .data("")
-                                        .build());
-                        return;
-                    }
-                } else {
+        QueryWrapper<User> userQueryWrapper1 = new QueryWrapper<>();
+        QueryWrapper<User> userQueryWrapper2 = new QueryWrapper<>();
+        userQueryWrapper1.eq("userId", userFriend.getUserId());
+        userQueryWrapper2.eq("userId", userFriend.getFriendId());
+        User friend = userMapper.selectOne(userQueryWrapper2);
+        User user = userMapper.selectOne(userQueryWrapper1);
+        if (1 == 0) {
+            System.out.println("userFriend:" + userFriend);
+            System.out.println("addfriend:" + friend);
+            System.out.println("adduser:" + user);
+        }
+        String roomId = null;
+        if (ObjectUtils.isNotEmpty(user)) {
+            if (ObjectUtils.isNotEmpty(user) && ObjectUtils.isNotEmpty(friend)) {
+                if (user.equals(friend)) {
                     client.sendEvent("addFriend",
                             new Response()
                                     .builder()
                                     .code(Rcode.FAIL)
-                                    .msg("该好友不存在")
+                                    .msg("不能添加自己为好友")
                                     .data("")
                                     .build());
-                    return;
                 }
-                UserFriend userFriendReverse = new UserFriend();
-                userFriendReverse.setFriendId(userFriend.getUserId());
-                userFriendReverse.setUserId(userFriend.getFriendId());
-                userFriendMapper.insert(userFriendReverse);
-                int result = userFriendMapper.insert(userFriend);
-                //添加成功
-                if (result > 0) {
-                    client.joinRoom(roomId);
-                    QueryWrapper<FriendMessage> friendMessageQueryWrapper1 = new QueryWrapper<>();
-                    friendMessageQueryWrapper1.eq("userId", userFriend.getUserId()).eq("friendId", userFriend.getFriendId()).orderByDesc("time");
-                    QueryWrapper<FriendMessage> friendMessageQueryWrapper2 = new QueryWrapper<>();
-                    friendMessageQueryWrapper2.eq("userId", userFriend.getFriendId()).eq("friendId", userFriend.getUserId()).orderByDesc("time");
-                    List<FriendMessage> friendMessages1 = friendMessageMapper.selectList(friendMessageQueryWrapper1);
-                    List<FriendMessage> friendMessages2 = friendMessageMapper.selectList(friendMessageQueryWrapper2);
-                    List<FriendMessageDto> friendMessageDtos = new ArrayList<>();
-                    if (friendMessages1.size() > 0) {
-                        BeanUtils.copyProperties(friendMessages1, friendMessageDtos);
-                    } else {
-                        BeanUtils.copyProperties(friendMessages2, friendMessageDtos);
-                    }
-                    FriendDto userDto = FriendDto.initializeFriendDto(user);
-                    FriendDto friendDto = FriendDto.initializeFriendDto(friend);
-                    FriendMessageDto friendMessageDto = new FriendMessageDto();
-                    FriendMessage defaultMessage = FriendMessage.defaultMessage(user, friend);
-                    friendMessageMapper.insert(defaultMessage);
-                    client.sendEvent("addFriend", new Response().builder().data(friendDto).msg(user.getUsername() + "成功添加" + friend.getUsername() + "为好友").build());
-                    if (ObjectUtils.isNotEmpty(clientCache.getUserClient(friend.getUserId()))) {
-                        HashMap<UUID, SocketIOClient> userClient = clientCache.getUserClient(friend.getUserId());
-                        userClient.forEach((UUID, SocketIOClient) -> {
-                            SocketIOClient.sendEvent("addFriend",
-                                    new Response()
-                                            .builder()
-                                            .data(userDto)
-                                            .msg(user.getUsername() + "成功添加您为好友")
-                                            .build());
-                        });
-                    }
+                QueryWrapper<UserFriend> userFriendQueryWrapper1 = new QueryWrapper<>();
+                QueryWrapper<UserFriend> userFriendQueryWrapper2 = new QueryWrapper<>();
+                userFriendQueryWrapper1.eq("userId", userFriend.getUserId()).eq("friendId", userFriend.getFriendId());
+                userFriendQueryWrapper2.eq("userId", userFriend.getFriendId()).eq("friendId", userFriend.getUserId());
+                UserFriend relation1 = userFriendMapper.selectOne(userFriendQueryWrapper1);
+                UserFriend relation2 = userFriendMapper.selectOne(userFriendQueryWrapper2);
+                if (1 == 0) {
+                    System.out.println("=======================================================================");
+                    //System.out.println(MyBeanUtils.strToASCII(userFriend.getUserId()) + ":" + MyBeanUtils.strToASCII(userFriend.getFriendId()));
+                    System.out.println("=======================================================================");
+                }
+                if (userFriend.getFriendId().compareTo(userFriend.getUserId()) > 0) {
+                    roomId = userFriend.getFriendId() + userFriend.getUserId();
+                } else {
+                    roomId = userFriend.getUserId() + userFriend.getFriendId();
+                }
+                if (ObjectUtils.isNotEmpty(relation1) || ObjectUtils.isNotEmpty(relation2)) {
+                    client.sendEvent("addFriend",
+                            new Response()
+                                    .builder()
+                                    .code(Rcode.FAIL)
+                                    .msg("好友已存在")
+                                    .data("")
+                                    .build());
                     return;
                 }
             } else {
                 client.sendEvent("addFriend",
                         new Response()
                                 .builder()
-                                .code(Rcode.ERROR)
-                                .msg("你没资格添加好友")
+                                .code(Rcode.FAIL)
+                                .msg("该好友不存在")
                                 .data("")
                                 .build());
                 return;
             }
+            UserFriend userFriendReverse = new UserFriend();
+            userFriendReverse.setFriendId(userFriend.getUserId());
+            userFriendReverse.setUserId(userFriend.getFriendId());
+            userFriendMapper.insert(userFriendReverse);
+            int result = userFriendMapper.insert(userFriend);
+            //添加成功
+            if (result > 0) {
+                client.joinRoom(roomId);
+                QueryWrapper<FriendMessage> friendMessageQueryWrapper1 = new QueryWrapper<>();
+                friendMessageQueryWrapper1.eq("userId", userFriend.getUserId()).eq("friendId", userFriend.getFriendId()).orderByDesc("time");
+                QueryWrapper<FriendMessage> friendMessageQueryWrapper2 = new QueryWrapper<>();
+                friendMessageQueryWrapper2.eq("userId", userFriend.getFriendId()).eq("friendId", userFriend.getUserId()).orderByDesc("time");
+                List<FriendMessage> friendMessages1 = friendMessageMapper.selectList(friendMessageQueryWrapper1);
+                List<FriendMessage> friendMessages2 = friendMessageMapper.selectList(friendMessageQueryWrapper2);
+                List<FriendMessageDto> friendMessageDtos = new ArrayList<>();
+                if (friendMessages1.size() > 0) {
+                    BeanUtils.copyProperties(friendMessages1, friendMessageDtos);
+                } else {
+                    BeanUtils.copyProperties(friendMessages2, friendMessageDtos);
+                }
+                FriendDto userDto = FriendDto.initializeFriendDto(user);
+                FriendDto friendDto = FriendDto.initializeFriendDto(friend);
+                FriendMessageDto friendMessageDto = new FriendMessageDto();
+                FriendMessage defaultMessage = FriendMessage.defaultMessage(user, friend);
+                friendMessageMapper.insert(defaultMessage);
+                client.sendEvent("addFriend", new Response().builder().data(friendDto).msg(user.getUsername() + "成功添加" + friend.getUsername() + "为好友").build());
+                if (ObjectUtils.isNotEmpty(clientCache.getUserClient(friend.getUserId()))) {
+                    HashMap<UUID, SocketIOClient> userClient = clientCache.getUserClient(friend.getUserId());
+                    userClient.forEach((UUID, SocketIOClient) -> {
+                        SocketIOClient.sendEvent("addFriend",
+                                new Response()
+                                        .builder()
+                                        .data(userDto)
+                                        .msg(user.getUsername() + "成功添加您为好友")
+                                        .build());
+                    });
+                }
+                return;
+            }
+        } else {
+            client.sendEvent("addFriend",
+                    new Response()
+                            .builder()
+                            .code(Rcode.ERROR)
+                            .msg("你没资格添加好友")
+                            .data("")
+                            .build());
+            return;
+        }
 //        } else {
 //            client.sendEvent("addFriend",
 //                    new Response()
@@ -760,8 +769,8 @@ public class SocketIOHandler {
             }
             groupMessageDto.setTime(new Date().getTime());
             GroupMessage groupMessage = groupMessageDto.initializeGroupMessageDto(groupMessageDto);
-            int result = groupMessageMapper.insert(groupMessage);
-            if (result > 0) {
+            boolean result = RedisUtil.setMessageCacheToRedis(groupMessage);
+            if (Boolean.TRUE.equals(result)) {
                 if (1 == 1) {
                     socketIOServer.getRoomOperations(groupMessage.getGroupId())
                             .sendEvent("groupMessage",
@@ -819,9 +828,11 @@ public class SocketIOHandler {
                 }
                 friendMessageDto.setTime(new Date().getTime());
                 FriendMessage friendMessage = FriendMessageDto.initializeFriendMessageDto(friendMessageDto);
-                int result = friendMessageMapper.insert(friendMessage);
-                if (result > 0) {
-                    System.out.println("roomId:" + roomId);
+                //将聊天信息存入redis
+                logger.info("存入私人聊天");
+                boolean result = RedisUtil.setMessageCacheToRedis(friendMessage);
+                if (Boolean.TRUE.equals(result)) {
+//                    System.out.println("roomId:" + roomId);
                     socketIOServer.getRoomOperations(roomId)
                             .sendEvent("friendMessage",
                                     new Response()

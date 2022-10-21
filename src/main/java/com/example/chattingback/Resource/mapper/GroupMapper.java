@@ -1,7 +1,7 @@
-package com.example.chattingback.mapper;
+package com.example.chattingback.Resource.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.chattingback.eneity.dbEntities.User;
+import com.example.chattingback.eneity.dbEntities.Group;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 @Mapper
 @Repository
-public interface UserMapper extends BaseMapper<User> {
+public interface GroupMapper extends BaseMapper<Group> {
 
-    ArrayList<User> selectAll();
+    ArrayList<Group> selectAll();
 }

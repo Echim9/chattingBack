@@ -1,4 +1,4 @@
-package com.example.chattingback.mapper;
+package com.example.chattingback.Resource.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.chattingback.eneity.dbEntities.FriendMessage;

@@ -7,8 +7,8 @@ import com.example.chattingback.eneity.dbEntities.UserGroup;
 import com.example.chattingback.eneity.response.LoginData;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
-import com.example.chattingback.mapper.UserGroupMapper;
-import com.example.chattingback.mapper.UserMapper;
+import com.example.chattingback.Resource.mapper.UserGroupMapper;
+import com.example.chattingback.Resource.mapper.UserMapper;
 import com.example.chattingback.service.imp.AuthServiceImp;
 import com.example.chattingback.service.imp.GroupServiceImp;
 import com.example.chattingback.utils.JwtUtil;
@@ -53,7 +53,15 @@ public class AuthController {
             return new Response
                     .builder()
                     .code(Rcode.FAIL)
-                    .msg("密码检测不通过，请修改密码")
+                    .msg("密码要求数字加大写小写，请修改密码")
+                    .data("")
+                    .build();
+        }
+        if (Boolean.FALSE.equals(VerifyUtil.isValidUsername(user.getUsername()))){
+            return new Response
+                    .builder()
+                    .code(Rcode.FAIL)
+                    .msg("用户名格式要求3～10位英文数字")
                     .data("")
                     .build();
         }

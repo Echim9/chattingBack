@@ -1,10 +1,11 @@
 package com.example.chattingback.controller;
 
+import com.example.chattingback.Resource.mapper.GroupMessage;
 import com.example.chattingback.controller.socketIO.ServerRunner;
 import com.example.chattingback.eneity.dbEntities.Group;
 import com.example.chattingback.eneity.dbEntities.User;
 import com.example.chattingback.eneity.response.Response;
-import com.example.chattingback.mapper.UserMapper;
+import com.example.chattingback.Resource.mapper.UserMapper;
 import com.example.chattingback.service.imp.GroupServiceImp;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class GroupController {
     private GroupServiceImp groupServiceImp;
 
     @Resource
-    private com.example.chattingback.mapper.GroupMessage groupMessage;
+    private GroupMessage groupMessage;
 
     //创建群组
     @PostMapping("/createGroup")

@@ -1,6 +1,7 @@
 package com.example.chattingback.utils;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -15,14 +16,6 @@ import java.util.UUID;
 public class imageUtils {
 
 
-    /**
-     * @项目名 ssh
-     * @功能 图片处理工具
-     * @类名 ImageTools
-     * @作者 wurui
-     * @日期 Aug 30, 20113:26:42 PM
-     * @版本 1.0
-     */
     private static final int WIDTH = 220;
 
     /**
@@ -58,7 +51,7 @@ public class imageUtils {
     }
 
     /**
-     * 将缓存图片输出到文件�?
+     * 将缓存图片输出到文件
      *
      * @param im         缓存图片
      * @param formatName 文件格式(后缀:jpg)
@@ -76,7 +69,7 @@ public class imageUtils {
     }
 
     /**
-     * 将缓存图片输出到文件�?
+     * 将缓存图片输出到文件
      *
      * @param im         缓存图片
      * @param formatName 文件格式(后缀:jpg)
@@ -94,7 +87,7 @@ public class imageUtils {
     }
 
     /**
-     * 将缓存图片输出到输出�?
+     * 将缓存图片输出到输出
      *
      * @param im
      * @param formatName
@@ -244,7 +237,7 @@ public class imageUtils {
     }
 
     /**
-     * 宽度超过默认值后，得到缩放图�?
+     * 宽度超过默认值后，得到缩放图
      *
      * @param file  文件
      * @param width 宽度
@@ -263,7 +256,7 @@ public class imageUtils {
     }
 
     /**
-     * 根据文件路径和宽度高度得到缩放图�?
+     * 根据文件路径和宽度高度得到缩放图
      *
      * @param path   路径
      * @param width  宽度
@@ -513,6 +506,23 @@ public class imageUtils {
 // 替换 -
         a = a.replaceAll("-", "");
         return a;
+    }
+
+
+    //传入file进行格式转化
+    public static File transferToFile(MultipartFile multipartFile) {
+//        选择用缓冲区来实现这个转换即使用java 创建的临时文件 使用 MultipartFile.transferto()方法 。
+        File file = null;
+        try {
+            String originalFilename = multipartFile.getOriginalFilename();
+            String[] filename = originalFilename.split("\\.");
+            file=File.createTempFile(filename[0], filename[1] + ".");
+            multipartFile.transferTo(file);
+            file.deleteOnExit();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
     }
 }
 

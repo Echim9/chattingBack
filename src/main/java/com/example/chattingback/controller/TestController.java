@@ -1,15 +1,23 @@
 package com.example.chattingback.controller;
 
+import com.example.chattingback.Resource.mapper.MybatisPlus;
 import com.example.chattingback.eneity.dbEntities.User;
-import com.example.chattingback.mapper.MybatisPlus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
 
 @RestController
 public class TestController {
+
+    private static JedisPool jedisPool;
+
+    public static void setJedisPool(JedisPool jedisPool) {
+        TestController.jedisPool = jedisPool;
+    }
+
     public class a{
         public class b{
 
@@ -28,11 +36,9 @@ public class TestController {
 
     }
     public static void main(String[] args) throws IOException {
-
-        String path = ClassUtils.getDefaultClassLoader().getResource("").getPath();
-        String filePath = path + "static/avatar/";
-        System.out.println(filePath);
-
+        Jedis resource = jedisPool.getResource();
+        String s = resource.get("cache:group:messages:Echim9的大家庭");
+        System.out.println(s);
     }
     @Autowired
     private MybatisPlus mybatisPlus;

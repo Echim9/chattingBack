@@ -8,9 +8,9 @@ import com.example.chattingback.eneity.dbEntities.UserGroup;
 import com.example.chattingback.eneity.response.GroupMesRes;
 import com.example.chattingback.eneity.response.Response;
 import com.example.chattingback.enums.Rcode;
-import com.example.chattingback.mapper.GroupMapper;
-import com.example.chattingback.mapper.UserGroupMapper;
-import com.example.chattingback.mapper.UserMapper;
+import com.example.chattingback.Resource.mapper.GroupMapper;
+import com.example.chattingback.Resource.mapper.UserGroupMapper;
+import com.example.chattingback.Resource.mapper.UserMapper;
 import com.example.chattingback.service.GroupService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import java.util.List;
 public class GroupServiceImp implements GroupService {
 
     @Autowired
-    private com.example.chattingback.mapper.GroupMessage groupMessage;
+    private com.example.chattingback.Resource.mapper.GroupMessage groupMessage;
 
     @Autowired
     private GroupMapper groupMapper;
